@@ -65,6 +65,7 @@
                 <div class="balance-item">💰 PG币：<span id="pgBalance">10000</span></div>
                 <div class="balance-item" id="userStatus" style="cursor:pointer;" onclick="showLoginUI()">👤 未登录</div>
                 <div class="balance-item" id="logoutBtn" style="display:none;cursor:pointer;background:#e74c3c;" onclick="doLogout()">🚪 退出</div>
+                <div class="balance-item" style="cursor:pointer;background:#27ae60;" onclick="showSaveCodeUI()">💾 存档码</div>
             </div>
         </div>
 
@@ -125,6 +126,24 @@
                     <button class="btn" onclick="doLogout()" style="flex:1; background: #e74c3c; color: white;">退出登录</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="result-modal" id="saveCodeModal">
+        <div class="result-content" style="max-width: 500px;">
+            <h2>💾 存档码</h2>
+            <p style="color: #666; margin: 10px 0;">复制下方代码，在另一台设备输入即可恢复数据</p>
+            <textarea id="saveCodeOutput" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; font-family: monospace;" readonly></textarea>
+            <div style="margin: 15px 0;">
+                <p style="margin-bottom: 10px;"><strong>输入存档码恢复数据：</strong></p>
+                <textarea id="saveCodeInput" style="width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; font-family: monospace;" placeholder="在此粘贴存档码..."></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-primary" onclick="copySaveCode()">📋 复制存档码</button>
+                <button class="btn btn-gold" onclick="loadSaveCode()">📥 恢复数据</button>
+                <button class="btn" onclick="closeSaveCodeModal()" style="background: #ccc; color: #333;">关闭</button>
+            </div>
+            <p id="saveCodeMsg" style="margin-top: 10px; font-size: 14px;"></p>
         </div>
     </div>
 
@@ -1463,6 +1482,72 @@
         // ========== 聊天系统结束 ==========
 
         init();
-    </script>
+    
+        // 存档码功能
+        function showSaveCodeUI() {
+            var data = {
+                pg: gameData.pg,
+                pets: gameData.pets,
+                username: gameData.username,
+                isLoggedIn: gameData.isLoggedIn,
+                registeredAt: gameData.registeredAt,
+                totalHatched: gameData.totalHatched,
+                totalLoginDays: gameData.totalLoginDays,
+                lastLoginDate: gameData.lastLoginDate
+            };
+            var code = btoa(encodeURIComponent(JSON.stringify(data)));
+            document.getElementById('saveCodeOutput').value = code;
+            document.getElementById('saveCodeInput').value = '';
+            document.getElementById('saveCodeMsg').textContent = '';
+            document.getElementById('saveCodeModal').classList.add('show');
+        }
+
+        function closeSaveCodeModal() {
+            document.getElementById('saveCodeModal').classList.remove('show');
+        }
+
+        function copySaveCode() {
+            var el = document.getElementById('saveCodeOutput');
+            el.select();
+            document.execCommand('copy');
+            document.getElementById('saveCodeMsg').textContent = '✅ 已复制到剪贴板！';
+            document.getElementById('saveCodeMsg').style.color = '#27ae60';
+        }
+
+        function loadSaveCode() {
+            var input = document.getElementById('saveCodeInput').value.trim();
+            if (!input) {
+                document.getElementById('saveCodeMsg').textContent = '❌ 请输入存档码';
+                document.getElementById('saveCodeMsg').style.color = '#e74c3c';
+                return;
+            }
+            try {
+                var decoded = decodeURIComponent(atob(input));
+                var data = JSON.parse(decoded);
+                if (data.pets && Array.isArray(data.pets)) {
+                    gameData.pg = typeof data.pg === 'number' ? data.pg : gameData.pg;
+                    gameData.pets = data.pets;
+                    gameData.username = data.username || gameData.username;
+                    gameData.isLoggedIn = data.isLoggedIn === true;
+                    gameData.registeredAt = data.registeredAt || gameData.registeredAt;
+                    gameData.totalHatched = typeof data.totalHatched === 'number' ? data.totalHatched : gameData.totalHatched;
+                    gameData.totalLoginDays = typeof data.totalLoginDays === 'number' ? data.totalLoginDays : gameData.totalLoginDays;
+                    gameData.lastLoginDate = data.lastLoginDate || gameData.lastLoginDate;
+                    saveGame();
+                    updateBalances();
+                    updateUserStatus();
+                    showTab('collection');
+                    document.getElementById('saveCodeMsg').textContent = '✅ 数据恢复成功！';
+                    document.getElementById('saveCodeMsg').style.color = '#27ae60';
+                    setTimeout(closeSaveCodeModal, 1500);
+                } else {
+                    throw new Error('Invalid data');
+                }
+            } catch (e) {
+                document.getElementById('saveCodeMsg').textContent = '❌ 存档码无效，请检查是否复制完整';
+                document.getElementById('saveCodeMsg').style.color = '#e74c3c';
+            }
+        }
+</script>
 </body>
 </html>
