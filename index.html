@@ -211,30 +211,28 @@
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    gameData = {
-                        pg: typeof parsed.pg === 'number' ? parsed.pg : 10000,
-                        pets: Array.isArray(parsed.pets) ? parsed.pets : [],
-                        username: parsed.username || '',
-                        isLoggedIn: parsed.isLoggedIn === true,
-                        registeredAt: parsed.registeredAt || 0,
-                        totalHatched: typeof parsed.totalHatched === 'number' ? parsed.totalHatched : 0,
-                        totalLoginDays: typeof parsed.totalLoginDays === 'number' ? parsed.totalLoginDays : 0,
-                        lastLoginDate: parsed.lastLoginDate || ''
-                    };
+                    gameData.pg = typeof parsed.pg === 'number' ? parsed.pg : 10000;
+                    gameData.pets = Array.isArray(parsed.pets) ? parsed.pets : [];
+                    gameData.username = parsed.username || '';
+                    gameData.isLoggedIn = parsed.isLoggedIn === true;
+                    gameData.registeredAt = parsed.registeredAt || 0;
+                    gameData.totalHatched = typeof parsed.totalHatched === 'number' ? parsed.totalHatched : 0;
+                    gameData.totalLoginDays = typeof parsed.totalLoginDays === 'number' ? parsed.totalLoginDays : 0;
+                    gameData.lastLoginDate = parsed.lastLoginDate || '';
                 } catch(e) {
                     console.error('存档读取失败，使用默认数据:', e);
                     gameData.pets = [
-                        { ...genesisPets[0], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 },
-                        { ...genesisPets[1], uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0 },
-                        { ...petDatabase[0], uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0 }
+                        Object.assign({}, genesisPets[0], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                        Object.assign({}, genesisPets[1], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0}),
+                        Object.assign({}, petDatabase[0], {uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0})
                     ];
                 }
             } else {
                 // 无存档则给初始宠物（方便测试）
                 gameData.pets = [
-                    { ...genesisPets[0], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 },
-                    { ...genesisPets[1], uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0 },
-                    { ...petDatabase[0], uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0 }
+                    Object.assign({}, genesisPets[0], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, genesisPets[1], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, petDatabase[0], {uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0})
                 ];
             }
             // 更新登录天数
@@ -642,45 +640,45 @@
             if (selectedPet.rarity === 'G0') {
                 if (roll < 0.1) {
                     // 10% 概率产出至尊宠物（S+级）
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.name = '至尊·' + child.name;
                     child.rarity = 'S+';
                     child.power = 2400 + Math.floor(Math.random() * 300);
                     resultType = 'supreme';
                 } else if (roll < 0.3) {
                     // 20% 概率产出传说宠物（S级）
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.name = '传说·' + child.name;
                     child.rarity = 'S';
                     child.power = 1700 + Math.floor(Math.random() * 400);
                     resultType = 'legendary';
                 } else {
                     // 70% 概率产出第二代宠物（G2）
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.rarity = 'G2';
                     child.power = 1000 + Math.floor(Math.random() * 600);
                     resultType = 'g2';
                 }
             } else if (selectedPet.rarity === 'S+' || selectedPet.rarity === 'S') {
                 if (roll < 0.05 && selectedPet.rarity === 'S') {
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.name = '传说·' + child.name;
                     child.rarity = 'S';
                     child.power = 1700 + Math.floor(Math.random() * 400);
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.rarity = 'G3';
                     child.power = 750 + Math.floor(Math.random() * 450);
                     resultType = 'g3';
                 }
             } else if (selectedPet.rarity === 'G2') {
                 if (roll < 0.05) {
-                    child = { ...petDatabase[Math.floor(Math.random() * 6)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * 6)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.name = '传说·' + child.name;
                     child.rarity = 'S';
                     child.power = 1600 + Math.floor(Math.random() * 300);
                     resultType = 'legendary';
                 } else {
-                    child = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                     child.rarity = 'G3';
                     child.power = 750 + Math.floor(Math.random() * 450);
                     resultType = 'g3';
@@ -961,8 +959,8 @@
                 password: password,
                 pg: 500,  // 注册赠送 500 PG
                 pets: [
-                    { ...genesisPets[Math.floor(Math.random() * genesisPets.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 },
-                    { ...genesisPets[Math.floor(Math.random() * genesisPets.length)], uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0 }
+                    Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0})
                 ],
                 registeredAt: Date.now(),
                 totalHatched: 0,
@@ -1255,10 +1253,10 @@
             let pet;
             if (roll < 0.7) {
                 // 70% 第二代
-                pet = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0 };
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0});
             } else {
                 // 30% 第三代
-                pet = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), rarity: 'G3', power: 750 + Math.floor(Math.random() * 450), hatchCount: 0, lastHatchTime: 0 };
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G3', power: 750 + Math.floor(Math.random() * 450), hatchCount: 0, lastHatchTime: 0});
             }
             
             gameData.pets.push(pet);
@@ -1278,10 +1276,10 @@
             const isGenesis = Math.random() < 0.1;
             let pet;
             if (isGenesis) {
-                pet = { ...genesisPets[Math.floor(Math.random() * genesisPets.length)], uid: Date.now(), hatchCount: 0, lastHatchTime: 0 };
+                pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
                 pet.power = 2500 + Math.floor(Math.random() * 500);
             } else {
-                pet = { ...petDatabase[Math.floor(Math.random() * petDatabase.length)], uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0 };
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0});
             }
             gameData.pets.push(pet);
             updateBalances();
@@ -1297,7 +1295,7 @@
             }
             gameData.pg -= 2800;
             gameData.totalHatched += 1;
-            const pet = { ...genesisPets[Math.floor(Math.random() * genesisPets.length)], uid: Date.now(), rarity: 'S+', power: 1600 + Math.floor(Math.random() * 800), hatchCount: 0, lastHatchTime: 0 };
+            const pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), rarity: 'S+', power: 1600 + Math.floor(Math.random() * 800), hatchCount: 0, lastHatchTime: 0});
             pet.name = pet.name.replace('创世', '至尊');
             gameData.pets.push(pet);
             updateBalances();
@@ -1313,7 +1311,7 @@
             }
             gameData.pg -= 2000;
             gameData.totalHatched += 1;
-            const pet = { ...genesisPets[Math.floor(Math.random() * genesisPets.length)], uid: Date.now(), rarity: 'S', power: 1300 + Math.floor(Math.random() * 700), hatchCount: 0, lastHatchTime: 0 };
+            const pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), rarity: 'S', power: 1300 + Math.floor(Math.random() * 700), hatchCount: 0, lastHatchTime: 0});
             pet.name = pet.name.replace('创世', '传说');
             gameData.pets.push(pet);
             updateBalances();
