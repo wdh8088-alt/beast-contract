@@ -1037,7 +1037,7 @@
             gameData.pets.forEach(function(pet) {
                 var isBattlePet = battleState && battleState.playerPet && battleState.playerPet.uid === pet.uid;
                 html += '<div onclick="startBattle(' + pet.uid + ')" style="background:' + (isBattlePet ? 'linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'white;') + 'border-radius:12px;padding:12px;width:130px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;transition:0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-                html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (pet.img || 'pets_profession/' + pet.id + '.png') + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
+                html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (pet.img || 'images/' + pet.id + '.png') + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
                 html += '<div style="font-weight:bold;font-size:13px;">' + pet.name + '</div>';
                 html += '<div style="font-size:11px;color:' + (isBattlePet ? 'rgba(255,255,255,0.8)' : '#999') + ';">⚡' + pet.power + ' | ' + (pet.profession||'无') + '</div>';
                 html += '</div>';
@@ -1090,9 +1090,9 @@
 
             // 显示对战区域
             document.getElementById('battleArena').style.display = 'block';
-            document.getElementById('playerPetImg').innerHTML = '<img src="' + (pet.img || 'pets_profession/' + pet.id + '.png') + '" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+            document.getElementById('playerPetImg').innerHTML = '<img src="' + (pet.img || 'images/' + pet.id + '.png') + '" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
             document.getElementById('playerPetName').textContent = pet.name + ' ⚡' + pet.power;
-            document.getElementById('npcPetImg').innerHTML = '<img src="pets_profession/' + npcPet.id + '.png" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+            document.getElementById('npcPetImg').innerHTML = '<img src="images/' + npcPet.id + '.png" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
             document.getElementById('npcPetName').textContent = '🤖' + npcPet.name + ' ⚡' + npcPet.power;
 
             addBattleLog('⚔️ 对战开始！' + pet.name + ' VS ' + npcPet.name);
