@@ -290,7 +290,7 @@
                             <div style="font-weight:bold;font-size:18px;color:#d63031;">✋ ${task.name}</div>
                             <div style="font-size:13px;color:#666;margin-top:5px;">${task.desc}</div>
                             <div style="font-size:14px;color:#e74c3c;margin-top:8px;font-weight:bold;">🎁 签到奖励：+${task.reward} PG</div>
-                            <button onclick="doCheckin(${task.reward})" style="border:none;border-radius:25px;padding:10px 30px;font-size:16px;${btnStyle}" ${alreadyClaimed?'disabled':''}>
+                            <button onclick="doCheckin(task.reward)" style="border:none;border-radius:25px;padding:10px 30px;font-size:16px;${btnStyle}" ${alreadyClaimed?'disabled':''}>
                                 ${alreadyClaimed ? '✅ 今日已签到' : '👆 点击签到'}
                             </button>
                         </div>
@@ -313,7 +313,7 @@
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;">
                             <span style="font-size:11px;background:#dfe6e9;color:#636e72;padding:2px 8px;border-radius:5px;">成就</span>
-                            <button onclick="claimTask('${task.id}',${task.reward},${completed})" style="border:none;border-radius:5px;padding:8px 15px;font-size:13px;${btnStyle}" ${canClaim?'':'disabled'}>
+                            <button onclick="claimTask(task.id,task.reward,completed)" style="border:none;border-radius:5px;padding:8px 15px;font-size:13px;${btnStyle}" ${canClaim?'':'disabled'}>
                                 ${alreadyClaimed ? '🔔 已领取' : completed ? '🎁 领取' : '🔒 未完成'}
                             </button>
                         </div>
@@ -402,7 +402,7 @@
         function showTab(tab, evt) {
         console.log('[DEBUG] showTab:', tab);
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            if (evt && evt.target) evt.target.classList.add('active');
+            if (evt && evt.target && evt.target.classList) evt.target.classList.add('active');
             selectedPet = null;
             const content = document.getElementById('content');
             switch(tab) {
@@ -455,7 +455,7 @@
                 filteredPets.forEach((pet, idx) => {
                     const rarityClass = 'rarity-' + pet.rarity;
                     html += `
-                        <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(${pet.uid})">
+                        <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(pet.uid)">
                             <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                             <div class="pet-name">${pet.name}</div>
                             <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
@@ -547,7 +547,7 @@
                 
                 html += `
                     <div class="pet-card ${rarityClass} hatch-pet-card" 
-                         onclick="${disabled ? '' : 'selectThisPet(' + idx + ')'}"
+                         onclick="selectThisPet(idx)"
                          style="${disabled ? 'opacity:0.5;' : 'cursor:pointer;'}">
                         <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                         <div class="pet-name">${pet.name}</div>
