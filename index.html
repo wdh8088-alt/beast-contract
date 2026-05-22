@@ -54,7 +54,9 @@
         .rarity-item { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
         .hint-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: left; }
         .cooldown-timer { color: #e74c3c; font-size: 12px; margin-top: 5px; }
-    </style>
+    
+        .pet-card .actions { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+</style>
 </head>
 <body>
     <div class="container">
@@ -65,17 +67,18 @@
                 <div class="balance-item">💰 PG币：<span id="pgBalance">10000</span></div>
                 <div class="balance-item" id="userStatus" style="cursor:pointer;" onclick="showLoginUI()">👤 未登录</div>
                 <div class="balance-item" id="logoutBtn" style="display:none;cursor:pointer;background:#e74c3c;" onclick="doLogout()">🚪 退出</div>
-                <div class="balance-item" style="cursor:pointer;background:#27ae60;" onclick="showSaveCodeUI()">💾 存档码</div>
             </div>
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="showTab('collection')">🎒 我的宠物</button>
-            <button class="tab" onclick="showTab('hatch')">🥚 孵化系统</button>
-            <button class="tab" onclick="showTab('tasks')">📋 任务</button>
-            <button class="tab" onclick="showTab('battle')">⚔️ 对战</button>
-            <button class="tab" onclick="showTab('shop')">🏪 商店</button>
-            <button class="tab" onclick="showTab('chat')">💬 聊天</button>
+            <button class="tab active" onclick="showTab('collection', event)">🎒 我的宠物</button>
+            <button class="tab" onclick="showTab('hatch', event)">🥚 孵化系统</button>
+            <button class="tab" onclick="showTab('tasks', event)">📋 任务</button>
+            <button class="tab" onclick="showTab('battle', event)">⚔️ 对战</button>
+            <button class="tab" onclick="showTab('shop', event)">🏪 商店</button>
+            <button class="tab" onclick="showTab('chat', event)">💬 聊天</button>
+            <button class="tab" onclick="showTab('care', event)">❤️ 养成</button>
+            <button class="tab" onclick="showTab('synth', event)">🔬 合成</button>
         </div>
 
         <div class="content" id="content">
@@ -126,24 +129,6 @@
                     <button class="btn" onclick="doLogout()" style="flex:1; background: #e74c3c; color: white;">退出登录</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="result-modal" id="saveCodeModal">
-        <div class="result-content" style="max-width: 500px;">
-            <h2>💾 存档码</h2>
-            <p style="color: #666; margin: 10px 0;">复制下方代码，在另一台设备输入即可恢复数据</p>
-            <textarea id="saveCodeOutput" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; font-family: monospace;" readonly></textarea>
-            <div style="margin: 15px 0;">
-                <p style="margin-bottom: 10px;"><strong>输入存档码恢复数据：</strong></p>
-                <textarea id="saveCodeInput" style="width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; font-family: monospace;" placeholder="在此粘贴存档码..."></textarea>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-primary" onclick="copySaveCode()">📋 复制存档码</button>
-                <button class="btn btn-gold" onclick="loadSaveCode()">📥 恢复数据</button>
-                <button class="btn" onclick="closeSaveCodeModal()" style="background: #ccc; color: #333;">关闭</button>
-            </div>
-            <p id="saveCodeMsg" style="margin-top: 10px; font-size: 14px;"></p>
         </div>
     </div>
 
@@ -263,6 +248,9 @@
             saveGame();
             updateBalances();
             updateUserStatus();
+            initPetStatus();
+            decayPetStatus();
+            setInterval(decayPetStatus, 60000); // Decay every minute
             showTab('collection');
         }
 
@@ -411,9 +399,10 @@
         }
 
         // 切换标签页
-        function showTab(tab) {
+        function showTab(tab, evt) {
+        console.log('[DEBUG] showTab:', tab);
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (evt && evt.target) evt.target.classList.add('active');
             selectedPet = null;
             const content = document.getElementById('content');
             switch(tab) {
@@ -422,7 +411,13 @@
                 case 'tasks': showTasks(content); break;
                 case 'battle': showBattle(content); break;
                 case 'shop': showShop(content); break;
-            case 'chat': showChat(content); break;
+            case 'care':
+                    showCareTab();
+                    break;
+                case 'synth':
+                    showTabSynth();
+                    break;
+                case 'chat': showChat(content); break;
             }
         }
 
@@ -461,7 +456,7 @@
                     const rarityClass = 'rarity-' + pet.rarity;
                     html += `
                         <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(${pet.uid})">
-                            <img src="images/${pet.img}" alt="${pet.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>'">
+                            <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                             <div class="pet-name">${pet.name}</div>
                             <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
                             <div class="pet-power">⚡${pet.power}</div>
@@ -554,7 +549,7 @@
                     <div class="pet-card ${rarityClass} hatch-pet-card" 
                          onclick="${disabled ? '' : 'selectThisPet(' + idx + ')'}"
                          style="${disabled ? 'opacity:0.5;' : 'cursor:pointer;'}">
-                        <img src="images/${pet.img}" alt="${pet.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>'">
+                        <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                         <div class="pet-name">${pet.name}</div>
                         <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
                         <div class="pet-power">⚡${pet.power}</div>
@@ -736,7 +731,7 @@
                 title.style.color = '#2ECC71';
             }
             
-            img.src = pet.img;
+            img.src = 'images/' + pet.img;
             img.onerror = () => { img.style.display = 'none'; };
             img.style.display = 'block';
             
@@ -769,7 +764,7 @@
             
             title.textContent = pet.name;
             title.style.color = pet.rarity === 'G0' ? '#FFD700' : pet.rarity === 'S+' ? '#FF00FF' : pet.rarity === 'S' ? '#9B59B6' : '#667eea';
-            img.src = pet.img;
+            img.src = 'images/' + pet.img;
             img.onerror = () => { img.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>'; };
             
             // 计算属性（如果没有则生成，按稀有度差异化）
@@ -1021,6 +1016,9 @@
             saveGame();
             updateUserStatus();
             closeLoginModal();
+            initPetStatus();
+            decayPetStatus();
+            setInterval(decayPetStatus, 60000); // Decay every minute
             showTab('collection');
         }
 
@@ -1053,7 +1051,7 @@
             gameData.pets.forEach(function(pet) {
                 var isBattlePet = battleState && battleState.playerPet && battleState.playerPet.uid === pet.uid;
                 html += '<div onclick="startBattle(' + pet.uid + ')" style="background:' + (isBattlePet ? 'linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'white;') + 'border-radius:12px;padding:12px;width:130px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;transition:0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-                html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (pet.img || 'images/' + pet.id + '.png') + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
+                html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (('images/' + pet.img) || ('images/' + pet.id + '.png')) + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
                 html += '<div style="font-weight:bold;font-size:13px;">' + pet.name + '</div>';
                 html += '<div style="font-size:11px;color:' + (isBattlePet ? 'rgba(255,255,255,0.8)' : '#999') + ';">⚡' + pet.power + ' | ' + (pet.profession||'无') + '</div>';
                 html += '</div>';
@@ -1106,7 +1104,7 @@
 
             // 显示对战区域
             document.getElementById('battleArena').style.display = 'block';
-            document.getElementById('playerPetImg').innerHTML = '<img src="' + (pet.img || 'images/' + pet.id + '.png') + '" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+            document.getElementById('playerPetImg').innerHTML = '<img src="' + (('images/' + pet.img) || ('images/' + pet.id + '.png')) + '" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
             document.getElementById('playerPetName').textContent = pet.name + ' ⚡' + pet.power;
             document.getElementById('npcPetImg').innerHTML = '<img src="images/' + npcPet.id + '.png" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
             document.getElementById('npcPetName').textContent = '🤖' + npcPet.name + ' ⚡' + npcPet.power;
@@ -1483,71 +1481,504 @@
 
         init();
     
-        // 存档码功能
-        function showSaveCodeUI() {
-            var data = {
-                pg: gameData.pg,
-                pets: gameData.pets,
-                username: gameData.username,
-                isLoggedIn: gameData.isLoggedIn,
-                registeredAt: gameData.registeredAt,
-                totalHatched: gameData.totalHatched,
-                totalLoginDays: gameData.totalLoginDays,
-                lastLoginDate: gameData.lastLoginDate
-            };
-            var code = btoa(encodeURIComponent(JSON.stringify(data)));
-            document.getElementById('saveCodeOutput').value = code;
-            document.getElementById('saveCodeInput').value = '';
-            document.getElementById('saveCodeMsg').textContent = '';
-            document.getElementById('saveCodeModal').classList.add('show');
-        }
 
-        function closeSaveCodeModal() {
-            document.getElementById('saveCodeModal').classList.remove('show');
-        }
+    
 
-        function copySaveCode() {
-            var el = document.getElementById('saveCodeOutput');
-            el.select();
-            document.execCommand('copy');
-            document.getElementById('saveCodeMsg').textContent = '✅ 已复制到剪贴板！';
-            document.getElementById('saveCodeMsg').style.color = '#27ae60';
+    // ========== 偷蛋功能（改版：访问好友小窝）==========
+    function showFriendHouses() {
+        console.log('[DEBUG] showFriendHouses 开始');
+        try {
+            let html = '<div style="text-align:center;margin-bottom:20px;"><h2>🏠 好友宠物小窝</h2><p style="color:#666;">访问好友的宠物小窝，偷偷拿一个蛋！</p></div>';
+            
+            // Generate 6 fake friends with pet houses
+            const friends = [
+                { name: '小明', pets: 5, eggs: 3 },
+                { name: '小红', pets: 3, eggs: 2 },
+                { name: '小刚', pets: 7, eggs: 4 },
+                { name: '小美', pets: 4, eggs: 1 },
+                { name: '小王', pets: 6, eggs: 3 },
+                { name: '小李', pets: 2, eggs: 2 }
+            ];
+            
+            html += '<div class="pet-grid">';
+            friends.forEach((f, idx) => {
+                const canSteal = Math.random() < 0.7;
+                html += '<div class="pet-card" onclick="visitFriendHouse(' + idx + ')" style="cursor:pointer;">';
+                html += '<div style="font-size:60px;">🏠</div>';
+                html += '<div class="pet-name">' + f.name + '的窝</div>';
+                html += '<div style="font-size:12px;color:#666;">宠物: ' + f.pets + '只 | 蛋: ' + f.eggs + '个</div>';
+                html += '<div style="margin-top:5px;">';
+                if (canSteal) {
+                    html += '<span style="color:#2ECC71;">🥚 可偷蛋</span>';
+                } else {
+                    html += '<span style="color:#E74C3C;">🚫 警惕中</span>';
+                }
+                html += '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            document.getElementById('content').innerHTML = html;
+            console.log('[DEBUG] showFriendHouses 完成');
+        } catch(e) {
+            console.error('[ERROR] showFriendHouses:', e);
+            showToast('加载好友列表失败');
         }
+    }
 
-        function loadSaveCode() {
-            var input = document.getElementById('saveCodeInput').value.trim();
-            if (!input) {
-                document.getElementById('saveCodeMsg').textContent = '❌ 请输入存档码';
-                document.getElementById('saveCodeMsg').style.color = '#e74c3c';
+    function visitFriendHouse(friendIdx) {
+        console.log('[DEBUG] visitFriendHouse:', friendIdx);
+        try {
+            const friendNames = ['小明', '小红', '小刚', '小美', '小王', '小李'];
+            const friendName = friendNames[friendIdx];
+            
+            let html = '<div style="text-align:center;"><h2>🏠 ' + friendName + '的宠物小窝</h2>';
+            html += '<p style="color:#666;">偷偷找一个蛋...</p></div>';
+            
+            html += '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:20px 0;">';
+            // Show 3-4 eggs in the friend's house
+            const eggCount = Math.floor(Math.random() * 3) + 2;
+            for (let i = 0; i < eggCount; i++) {
+                const success = i === 0; // First egg is stealable
+                html += '<div onclick="tryStealEgg(' + friendIdx + ', ' + i + ')" style="cursor:pointer;text-align:center;padding:20px;background:#f8f9fa;border-radius:10px;' + (success ? '' : 'opacity:0.5;') + '">';
+                html += '<div style="font-size:60px;">🥚</div>';
+                html += '<div style="font-size:12px;color:#666;">蛋 ' + (i+1) + '</div>';
+                if (success) {
+                    html += '<div style="font-size:11px;color:#2ECC71;">点击偷取</div>';
+                } else {
+                    html += '<div style="font-size:11px;color:#E74C3C;">已被发现</div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            
+            html += '<div style="text-align:center;margin-top:20px;"><button class="btn" onclick="showFriendHouses()">← 返回</button></div>';
+            
+            document.getElementById('content').innerHTML = html;
+            console.log('[DEBUG] visitFriendHouse 完成');
+        } catch(e) {
+            console.error('[ERROR] visitFriendHouse:', e);
+        }
+    }
+
+    function tryStealEgg(friendIdx, eggIdx) {
+        console.log('[DEBUG] tryStealEgg:', friendIdx, eggIdx);
+        try {
+            if (eggIdx !== 0) {
+                showToast('😅 被发现了！下次再来...');
                 return;
             }
-            try {
-                var decoded = decodeURIComponent(atob(input));
-                var data = JSON.parse(decoded);
-                if (data.pets && Array.isArray(data.pets)) {
-                    gameData.pg = typeof data.pg === 'number' ? data.pg : gameData.pg;
-                    gameData.pets = data.pets;
-                    gameData.username = data.username || gameData.username;
-                    gameData.isLoggedIn = data.isLoggedIn === true;
-                    gameData.registeredAt = data.registeredAt || gameData.registeredAt;
-                    gameData.totalHatched = typeof data.totalHatched === 'number' ? data.totalHatched : gameData.totalHatched;
-                    gameData.totalLoginDays = typeof data.totalLoginDays === 'number' ? data.totalLoginDays : gameData.totalLoginDays;
-                    gameData.lastLoginDate = data.lastLoginDate || gameData.lastLoginDate;
-                    saveGame();
-                    updateBalances();
-                    updateUserStatus();
-                    showTab('collection');
-                    document.getElementById('saveCodeMsg').textContent = '✅ 数据恢复成功！';
-                    document.getElementById('saveCodeMsg').style.color = '#27ae60';
-                    setTimeout(closeSaveCodeModal, 1500);
-                } else {
-                    throw new Error('Invalid data');
-                }
-            } catch (e) {
-                document.getElementById('saveCodeMsg').textContent = '❌ 存档码无效，请检查是否复制完整';
-                document.getElementById('saveCodeMsg').style.color = '#e74c3c';
+            
+            const lastSteal = localStorage.getItem('lastStealTime');
+            if (lastSteal && Date.now() - parseInt(lastSteal) < 1800000) {
+                const remaining = Math.ceil((1800000 - (Date.now() - parseInt(lastSteal))) / 60000);
+                showToast('⏰ 冷却中，' + remaining + '分钟后再来');
+                return;
             }
+            
+            if (Math.random() < 0.1) {
+                const egg = petDatabase[Math.floor(Math.random() * petDatabase.length)];
+                const newPet = Object.assign({}, egg, { uid: Date.now(), hatchCount: 0, lastHatchTime: 0, status: { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() } });
+                gameData.pets.push(newPet);
+                saveGame();
+                showToast('🥚 偷蛋成功！获得 ' + egg.name);
+            } else {
+                showToast('😢 偷蛋失败...下次再来');
+            }
+            
+            localStorage.setItem('lastStealTime', Date.now());
+            setTimeout(() => showFriendHouses(), 1000);
+        } catch(e) {
+            console.error('[ERROR] tryStealEgg:', e);
+            showToast('偷蛋失败');
         }
+    }
+
+// ========== 养成系统 ==========
+    function decayPetStatus() {
+        if (!gameData.isLoggedIn) return;
+        const now = Date.now();
+        gameData.pets.forEach(pet => {
+            if (!pet.status) pet.status = { hunger: 80, health: 80, happiness: 80, lastDecay: now };
+            const elapsed = (now - pet.status.lastDecay) / 60000; // minutes
+            pet.status.hunger = Math.max(0, pet.status.hunger - elapsed * 2);
+            pet.status.health = Math.max(0, pet.status.health - elapsed * 0.5);
+            pet.status.happiness = Math.max(0, pet.status.happiness - elapsed * 1.5);
+            pet.status.lastDecay = now;
+        });
+        saveGame();
+    }
+
+    function initPetStatus() {
+        gameData.pets.forEach(pet => {
+            if (!pet.status) pet.status = { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() };
+        });
+    }
+
+    function feedPet(uid) {
+            try {
+                console.log('[DEBUG] feedPet 开始执行');
+
+        if (gameData.pg < 20) return showToast('PG不足！需要20 PG');
+        gameData.pg -= 20;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.hunger = Math.min(100, pet.status.hunger + 30);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🍗 喂养成功！饥饿值+30');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] feedPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    function cleanPet(uid) {
+            try {
+                console.log('[DEBUG] cleanPet 开始执行');
+
+        if (gameData.pg < 15) return showToast('PG不足！需要15 PG');
+        gameData.pg -= 15;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.health = Math.min(100, pet.status.health + 25);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🧹 清洁成功！健康值+25');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] cleanPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    function playWithPet(uid) {
+            try {
+                console.log('[DEBUG] playWithPet 开始执行');
+
+        if (gameData.pg < 10) return showToast('PG不足！需要10 PG');
+        gameData.pg -= 10;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.happiness = Math.min(100, pet.status.happiness + 35);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🎾 玩耍成功！快乐值+35');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] playWithPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    function stealEgg() {
+            try {
+                console.log('[DEBUG] stealEgg 开始执行');
+
+        const lastSteal = localStorage.getItem('lastStealTime');
+        if (lastSteal && Date.now() - parseInt(lastSteal) < 1800000) {
+            const remaining = Math.ceil((1800000 - (Date.now() - parseInt(lastSteal))) / 60000);
+            return showToast(`⏰ 冷却中，${remaining}分钟后再来`);
+        }
+        if (Math.random() < 0.1) {
+            const egg = petDatabase[Math.floor(Math.random() * petDatabase.length)];
+            const newPet = Object.assign({}, egg, { uid: Date.now(), hatchCount: 0, lastHatchTime: 0, status: { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() } });
+            gameData.pets.push(newPet);
+            saveGame();
+            showToast('🥚 偷蛋成功！获得 ' + egg.name);
+        } else {
+            showToast('😢 偷蛋失败...下次再来');
+        }
+        localStorage.setItem('lastStealTime', Date.now());
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] stealEgg:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    function showCareTab() {
+            try {
+                console.log('[DEBUG] showCareTab 开始执行');
+
+        decayPetStatus();
+        let html = '<div style="text-align:center; margin-bottom:20px;"><h2>❤️ 宠物养成</h2><p style="color:#666;">照顾你的宠物，保持它们健康快乐！</p></div>';
+        html += '<div class="pet-grid">';
+        gameData.pets.forEach(pet => {
+            const s = pet.status || { hunger: 80, health: 80, happiness: 80 };
+            const hungerColor = s.hunger > 60 ? '#2ECC71' : (s.hunger > 30 ? '#F39C12' : '#E74C3C');
+            const healthColor = s.health > 60 ? '#2ECC71' : (s.health > 30 ? '#F39C12' : '#E74C3C');
+            const happyColor = s.happiness > 60 ? '#2ECC71' : (s.happiness > 30 ? '#F39C12' : '#E74C3C');
+            html += `<div class="pet-card rarity-${pet.rarity}" onclick="showPetDetail(${pet.uid})" style="cursor:pointer;">
+                <img src="images/${pet.img}" alt="${pet.name}" style="width:100%;height:120px;object-fit:contain;" onerror="this.style.display='none'">
+                <div class="pet-name">${pet.name}</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.hunger}%;background:${hungerColor};"></div></div>
+                <div style="font-size:11px;color:#666;">🍖 饥饿: ${Math.round(s.hunger)}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.health}%;background:${healthColor};"></div></div>
+                <div style="font-size:11px;color:#666;">💊 健康: ${Math.round(s.health)}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.happiness}%;background:${happyColor};"></div></div>
+                <div style="font-size:11px;color:#666;">😊 快乐: ${Math.round(s.happiness)}%</div>
+                <div style="margin-top:8px; display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="event.stopPropagation();feedPet(${pet.uid})">🍗 喂</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="event.stopPropagation();cleanPet(${pet.uid})">🧹 清洁</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="event.stopPropagation();playWithPet(${pet.uid})">🎾 玩</button>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        
+        const lastSteal = localStorage.getItem('lastStealTime');
+        const canSteal = !lastSteal || Date.now() - parseInt(lastSteal) >= 1800000;
+        html += `<div style="text-align:center;margin-top:20px;">
+            <button class="btn btn-gold" onclick="showFriendHouses()">🏠 访问好友小窝</button>
+            ${canSteal ? '' : '<div class="cooldown-timer">冷却中...</div>'}
+        </div>`;
+        
+        document.getElementById('content').innerHTML = html;
+    
+            } catch(e) {
+                console.error('[ERROR] showCareTab:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    
+
+    
+
+    // ========== 合成系统 V2 ==========
+    let synthPet1 = null;
+    let synthPet2 = null;
+    let synthFilter = 'all';
+
+    function showTabSynth() {
+        console.log('[DEBUG] showTabSynth called');
+        try {
+            let html = '<div style="text-align:center;margin-bottom:20px;"><h2>🔬 宠物合成</h2><p style="color:#666;">选择同类宠物合成，获得更强大的新宠物！</p></div>';
+
+            // Filter buttons
+            html += '<div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;justify-content:center;">';
+            const professions = ['all', '功夫', '厨师', '魔法', '牛仔', '忍者', '海盗'];
+            const labels = {'all':'全部', '功夫':'功夫', '厨师':'厨师', '魔法':'魔法', '牛仔':'牛仔', '忍者':'忍者', '海盗':'海盗'};
+            professions.forEach(p => {
+                const active = synthFilter === p;
+                html += '<button onclick="synthFilter=\''+p+'\';showTabSynth()" style="padding:8px 16px;border-radius:20px;border:2px solid '+(active?'#667eea':'#ddd')+';background:'+(active?'#667eea':'white')+';color:'+(active?'white':'#333')+';cursor:pointer;font-size:14px;font-weight:bold;">'+labels[p]+'</button>';
+            });
+            html += '</div>';
+
+            // Selected pets preview area
+            html += '<div style="background:linear-gradient(135deg,#f8f9fa,#e8eaf6);padding:20px;border-radius:15px;margin-bottom:20px;min-height:120px;">';
+            if (synthPet1 || synthPet2) {
+                html += '<div style="display:flex;gap:20px;justify-content:center;align-items:center;flex-wrap:wrap;">';
+                // Pet 1 slot
+                if (synthPet1) {
+                    const p1 = gameData.pets.find(p => p.uid === synthPet1);
+                    if (p1) {
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #667eea;">';
+                        html += '<img src="images/'+p1.img+'" style="width:70px;height:70px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                        html += '<div style="font-weight:bold;">'+p1.name+'</div>';
+                        html += '<div style="color:#667eea;">⚔️ '+p1.power+'</div>';
+                        html += '<div style="color:#9B59B6;font-size:12px;">⬆️ 主宠物</div>';
+                        html += '<button onclick="synthPet1=null;showTabSynth()" style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E74C3C;background:#fff;color:#E74C3C;cursor:pointer;font-size:11px;">取消</button>';
+                        html += '</div>';
+                    }
+                } else {
+                    html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:2px dashed #ccc;min-width:100px;"><div style="font-size:30px;">➕</div><div style="color:#999;font-size:12px;">选择主宠物</div></div>';
+                }
+                // Plus sign
+                html += '<div style="font-size:36px;color:#667eea;font-weight:bold;">+</div>';
+                // Pet 2 slot
+                if (synthPet2) {
+                    const p2 = gameData.pets.find(p => p.uid === synthPet2);
+                    if (p2) {
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #9B59B6;">';
+                        html += '<img src="images/'+p2.img+'" style="width:70px;height:70px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                        html += '<div style="font-weight:bold;">'+p2.name+'</div>';
+                        html += '<div style="color:#9B59B6;">⚔️ '+p2.power+'</div>';
+                        html += '<div style="color:#667eea;font-size:12px;">⬆️ 副宠物</div>';
+                        html += '<button onclick="synthPet2=null;showTabSynth()" style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E74C3C;background:#fff;color:#E74C3C;cursor:pointer;font-size:11px;">取消</button>';
+                        html += '</div>';
+                    }
+                } else {
+                    html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:2px dashed #ccc;min-width:100px;"><div style="font-size:30px;">➕</div><div style="color:#999;font-size:12px;">选择副宠物</div></div>';
+                }
+                // Equals + result preview
+                if (synthPet1 && synthPet2) {
+                    const p1 = gameData.pets.find(p => p.uid === synthPet1);
+                    const p2 = gameData.pets.find(p => p.uid === synthPet2);
+                    if (p1 && p2) {
+                        const avgPower = Math.round(Math.max(p1.power, p2.power) * 1.3);
+                        const sameType = p1.profession === p2.profession;
+                        html += '<div style="font-size:36px;color:#FFD700;font-weight:bold;">=</div>';
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #FFD700;">';
+                        html += '<div style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto;">🥚</div>';
+                        html += '<div style="font-weight:bold;color:#667eea;">???</div>';
+                        html += '<div style="color:#FFD700;">⚔️ ~'+avgPower+'</div>';
+                        if (sameType) {
+                            html += '<div style="color:#2ECC71;font-size:12px;">同类合成 ×2倍补</div>';
+                        }
+                        html += '</div>';
+                    }
+                }
+                html += '</div>';
+            } else {
+                html += '<div style="text-align:center;color:#999;padding:20px;"><div style="font-size:48px;">🔬</div><p>请从下方选择两只宠物进行合成</p></div>';
+            }
+            html += '</div>';
+
+            // Synthesize button (prominent)
+            const canSynth = synthPet1 && synthPet2;
+            const p1check = canSynth ? gameData.pets.find(p => p.uid === synthPet1) : null;
+            const p2check = canSynth ? gameData.pets.find(p => p.uid === synthPet2) : null;
+            const sameProfession = p1check && p2check && p1check.profession === p2check.profession;
+            html += '<div style="text-align:center;margin-bottom:20px;">';
+            if (canSynth && p1check && p2check) {
+                if (!sameProfession) {
+                    html += '<div style="color:#E74C3C;margin-bottom:10px;">⚠️ 非同类合成成功率较低，建议选择同类宠物</div>';
+                } else {
+                    html += '<div style="color:#2ECC71;margin-bottom:10px;">✅ 同类合成，成功率提升！</div>';
+                }
+                html += '<button onclick="doSynthesis()" style="padding:15px 40px;border:none;border-radius:10px;background:linear-gradient(135deg,#FFD700,#FFA500);color:white;font-size:18px;font-weight:bold;cursor:pointer;box-shadow:0 5px 15px rgba(255,165,0,0.4);">🔬 确认合成 (100 PG)</button>';
+            } else {
+                html += '<button disabled style="padding:15px 40px;border:none;border-radius:10px;background:#ccc;color:white;font-size:18px;cursor:not-allowed;">🔬 请先选择两只宠物</button>';
+            }
+            html += '</div>';
+
+            // Pet selection grid (filtered)
+            const filteredPets = synthFilter === 'all' ? gameData.pets : gameData.pets.filter(p => p.profession === synthFilter);
+            if (filteredPets.length === 0) {
+                html += '<div style="text-align:center;color:#999;padding:30px;">该分类下没有宠物</div>';
+            } else {
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">';
+                filteredPets.forEach(pet => {
+                    const isS1 = pet.uid === synthPet1;
+                    const isS2 = pet.uid === synthPet2;
+                    html += '<div class="pet-card rarity-'+pet.rarity+(isS1||isS2?' selected':'')+'" onclick="selectSynthPet('+pet.uid+')" style="cursor:pointer;">';
+                    html += '<img src="images/'+pet.img+'" style="width:100%;height:100px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                    html += '<div class="pet-name">'+pet.name+'</div>';
+                    html += '<div style="font-size:11px;color:#999;">'+pet.profession+'</div>';
+                    html += '<div class="pet-power">⚔️ '+pet.power+'</div>';
+                    if (isS1) html += '<div style="color:#667eea;font-weight:bold;font-size:12px;">⬆️ 主</div>';
+                    if (isS2) html += '<div style="color:#9B59B6;font-weight:bold;font-size:12px;">⬆️ 副</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            document.getElementById('content').innerHTML = html;
+        } catch(e) {
+            console.error('[ERROR] showTabSynth:', e);
+            document.getElementById('content').innerHTML = '<div style="text-align:center;padding:50px;"><h3>合成系统加载失败</h3><p>'+e.message+'</p></div>';
+        }
+    }
+
+    function selectSynthPet(uid) {
+        console.log('[DEBUG] selectSynthPet:', uid);
+        try {
+            const pet = gameData.pets.find(p => p.uid === uid);
+            if (!pet) return;
+
+            // If clicking already selected pet, deselect it
+            if (synthPet1 === uid) { synthPet1 = null; showTabSynth(); return; }
+            if (synthPet2 === uid) { synthPet2 = null; showTabSynth(); return; }
+
+            // Auto-select: if first slot empty, fill it; else if second empty, fill with same profession
+            if (!synthPet1) {
+                synthPet1 = uid;
+                // Auto-filter to same profession for second pick
+                synthFilter = pet.profession;
+            } else if (!synthPet2) {
+                synthPet2 = uid;
+            } else {
+                // Both filled, reset with new selection as pet1
+                synthPet1 = uid;
+                synthPet2 = null;
+                synthFilter = pet.profession;
+            }
+            showTabSynth();
+        } catch(e) {
+            console.error('[ERROR] selectSynthPet:', e);
+        }
+    }
+
+    function doSynthesis() {
+        console.log('[DEBUG] doSynthesis start');
+        try {
+            if (!synthPet1 || !synthPet2) return showToast('请选择两只宠物！');
+            if (gameData.pg < 100) return showToast('PG不足！需覀100 PG');
+
+            const p1 = gameData.pets.find(p => p.uid === synthPet1);
+            const p2 = gameData.pets.find(p => p.uid === synthPet2);
+            if (!p1 || !p2) return showToast('宠物不存在！');
+
+            const sameProfession = p1.profession === p2.profession;
+            // Same profession: 80% upgrade rarity, 20% same; Different: 30% upgrade, 70% downgrade
+            const upgradeChance = sameProfession ? 0.8 : 0.3;
+            const didUpgrade = Math.random() < upgradeChance;
+
+            const rarityOrder = ['N', 'G3', 'G2', 'S', 'S+', 'G0'];
+            let newRarity;
+            if (didUpgrade) {
+                const idx = rarityOrder.indexOf(p1.rarity);
+                newRarity = idx < rarityOrder.length - 1 ? rarityOrder[idx + 1] : 'G0';
+            } else {
+                newRarity = p1.rarity;
+            }
+
+            const newPower = Math.round(Math.max(p1.power, p2.power) * (sameProfession ? 1.5 : 1.2));
+            const newLevel = Math.max(p1.level || 1, p2.level || 1) + 1;
+
+            // Remove old pets
+            gameData.pets = gameData.pets.filter(p => p.uid !== synthPet1 && p.uid !== synthPet2);
+            gameData.pg -= 100;
+
+            // Create new pet - inherit profession from parents
+            const newPet = Object.assign({}, p1, {
+                uid: Date.now(),
+                rarity: newRarity,
+                power: newPower,
+                level: newLevel,
+                exp: 0,
+                hatchCount: 0,
+                lastHatchTime: 0,
+                status: { hunger: 100, health: 100, happiness: 100, lastDecay: Date.now() }
+            });
+
+            gameData.pets.push(newPet);
+            synthPet1 = null;
+            synthPet2 = null;
+
+            saveGame();
+            updateBalances();
+
+            // Show result
+            const rarityNames = {'N':'普通','G3':'第三代','G2':'第二代','S':'传说','S+':'至尊','G0':'创世'};
+            let msg = '🔬 合成成功！';
+            msg += '\n新宠物: '+newPet.name+' ('+rarityNames[newRarity]+')';
+            msg += '\n战力: '+newPower+' | 等级: Lv.'+newLevel;
+            if (didUpgrade) msg += '\n🔥 稀有度提升！';
+            showToast(msg);
+
+            showTabSynth();
+        } catch(e) {
+            console.error('[ERROR] doSynthesis:', e);
+            showToast('合成失败，请重试');
+        }
+    }
 </script>
 </body>
 </html>

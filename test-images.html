@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>图片测试</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #1a1a2e; color: white; }
+    .test { margin: 20px 0; padding: 10px; background: #16213e; border-radius: 8px; }
+    img { display: block; margin: 10px 0; border: 2px solid #667eea; }
+  </style>
+</head>
+<body>
+  <h1>🖼️ 图片加载测试</h1>
+  
+  <div class="test">
+    <h3>测试1: 直接图片URL</h3>
+    <p>images/kungfu_fox.png</p>
+    <img src="images/kungfu_fox.png" onerror="this.style.border='3px solid red'; this.alt='加载失败'">
+    <p id="r1"></p>
+  </div>
+
+  <div class="test">
+    <h3>测试2: 绝对路径</h3>
+    <p>/images/kungfu_fox.png</p>
+    <img src="/images/kungfu_fox.png" onerror="this.style.border='3px solid red'">
+  </div>
+
+  <div class="test">
+    <h3>测试3: 完整URL</h3>
+    <p>https://friendly-dragon-9fe9da.netlify.app/images/kungfu_fox.png</p>
+    <img src="https://friendly-dragon-9fe9da.netlify.app/images/kungfu_fox.png" onerror="this.style.border='3px solid red'">
+  </div>
+
+  <div class="test">
+    <h3>测试4: JS动态创建图片</h3>
+    <div id="js-img"></div>
+  </div>
+
+  <script>
+    // Test 4: JS create image
+    const img = new Image();
+    img.src = 'images/chef_cat.png';
+    img.onload = () => document.getElementById('js-img').innerHTML = '✅ 加载成功! <img src="' + img.src + '" style="width:60px">';
+    img.onerror = () => document.getElementById('js-img').innerHTML = '❌ 加载失败: ' + img.src;
+    document.getElementById('js-img').appendChild(img);
+
+    // Check all images on page
+    document.querySelectorAll('img').forEach((img, i) => {
+      img.onload = () => console.log(`Img ${i} loaded:`, img.src);
+      img.onerror = () => console.error(`Img ${i} FAILED:`, img.src);
+    });
+  </script>
+</body>
+</html>
