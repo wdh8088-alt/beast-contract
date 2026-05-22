@@ -290,7 +290,7 @@
                             <div style="font-weight:bold;font-size:18px;color:#d63031;">✋ ${task.name}</div>
                             <div style="font-size:13px;color:#666;margin-top:5px;">${task.desc}</div>
                             <div style="font-size:14px;color:#e74c3c;margin-top:8px;font-weight:bold;">🎁 签到奖励：+${task.reward} PG</div>
-                            <button onclick="doCheckin(task.reward)" style="border:none;border-radius:25px;padding:10px 30px;font-size:16px;${btnStyle}" ${alreadyClaimed?'disabled':''}>
+                            <button onclick="doCheckin(50)" style="border:none;border-radius:25px;padding:10px 30px;font-size:16px;${btnStyle}" ${alreadyClaimed?'disabled':''}>
                                 ${alreadyClaimed ? '✅ 今日已签到' : '👆 点击签到'}
                             </button>
                         </div>
