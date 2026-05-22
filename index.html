@@ -547,7 +547,7 @@
                 
                 html += `
                     <div class="pet-card ${rarityClass} hatch-pet-card" 
-                         onclick="selectThisPet(idx)"
+                         onclick="selectThisPet(idx, event)"
                          style="${disabled ? 'opacity:0.5;' : 'cursor:pointer;'}">
                         <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                         <div class="pet-name">${pet.name}</div>
@@ -576,10 +576,15 @@
         }
 
         // 选择宠物（从孵化页面选择）
-        function selectThisPet(idx) {
+        function selectThisPet(idx, evt) {
             selectedPet = gameData.pets[idx];
             document.querySelectorAll('.hatch-pet-card').forEach(c => c.classList.remove('selected'));
-            event.target.closest('.hatch-pet-card').classList.add('selected');
+            if (evt && evt.target && evt.target.closest) {
+                evt.target.closest('.hatch-pet-card').classList.add('selected');
+            } else {
+                var cards = document.querySelectorAll('.hatch-pet-card');
+                if (cards[idx]) cards[idx].classList.add('selected');
+            }
             updateHatchButton();
         }
 
