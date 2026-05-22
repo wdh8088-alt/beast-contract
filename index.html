@@ -57,6 +57,155 @@
     
         .pet-card .actions { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
 </style>
+
+    <!-- Socket.IO for real-time chat -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+        let chatConnected = false;
+        
+        function connectChatServer() {
+            if (chatConnected) return;
+            
+            socket = io('http://' + window.location.host, {
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 10
+            });
+            
+            socket.on('connect', () => {
+                console.log('✅ Connected to chat server');
+                chatConnected = true;
+                
+                // 登录
+                const currentUser = JSON.parse(localStorage.getItem('petPlanetUser') || '{}');
+                if (currentUser && currentUser.username) {
+                    socket.emit('login', {
+                        username: currentUser.username,
+                        userId: currentUser.username
+                    });
+                }
+            });
+            
+            socket.on('chat_history', (data) => {
+                console.log('📜 Received chat history:', data.messages.length, 'messages');
+                // 显示历史消息
+                displayChatHistory(data.messages);
+            });
+            
+            socket.on('new_message', (data) => {
+                console.log('💬 New message:', data);
+                // 添加新消息到聊天框
+                addChatMessage(data.username, data.message, new Date(data.timestamp));
+            });
+            
+            socket.on('online_users', (users) => {
+                console.log('👥 Online users:', users);
+                updateOnlineUsers(users);
+            });
+            
+            socket.on('user_status', (data) => {
+                // 显示用户上线/下线通知
+                addSystemMessage(data.message);
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('❌ Disconnected from chat server');
+                chatConnected = false;
+            });
+            
+            socket.on('connect_error', (err) => {
+                console.error('❌ Connection error:', err.message);
+            });
+        }
+        
+        function displayChatHistory(messages) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            chatMessages.innerHTML = '';
+            messages.forEach(msg => {
+                addChatMessage(msg.username, msg.message, new Date(msg.timestamp));
+            });
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addChatMessage(username, message, timestamp) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            const timeStr = timestamp.toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = 'margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 5px;';
+            msgDiv.innerHTML = `
+                <strong style="color: #667eea;">${username}</strong>
+                <span style="color: #999; font-size: 12px; margin-left: 8px;">${timeStr}</span>
+                <div style="margin-top: 4px;">${message}</div>
+            `;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addSystemMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = 'margin-bottom: 8px; padding: 8px; background: #fff3cd; border-radius: 5px; text-align: center; font-size: 12px; color: #856404;';
+            msgDiv.textContent = message;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function updateOnlineUsers(users) {
+            const onlineList = document.getElementById('onlineUsers');
+            if (!onlineList) return;
+            
+            onlineList.innerHTML = '<strong>在线用户 (' + users.length + '):</strong><br>' + users.map(u => '🟢 ' + u).join('<br>');
+        }
+        
+        // 重写发送聊天消息函数
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            if (!input || !input.value.trim()) return;
+            
+            const message = input.value.trim();
+            input.value = '';
+            
+            if (!socket || !chatConnected) {
+                alert('聊天服务器未连接，请刷新页面');
+                return;
+            }
+            
+            const currentUser = JSON.parse(localStorage.getItem('petPlanetUser') || '{}');
+            if (!currentUser || !currentUser.username) {
+                alert('请先登录');
+                return;
+            }
+            
+            // 发送到服务器
+            socket.emit('chat_message', {
+                channel: 'world',
+                username: currentUser.username,
+                message: message,
+                timestamp: Date.now()
+            });
+        }
+        
+        // 页面加载时连接聊天服务器
+        window.addEventListener('load', () => {
+            // 延迟连接，确保用户已登录
+            setTimeout(connectChatServer, 2000);
+        });
+    </script>
+
 </head>
 <body>
     <div class="container">
@@ -1367,7 +1516,9 @@
         function showChat(content) {
             let html = '<h2>💬 世界频道</h2>';
             html += '<p style="color:#666;font-size:12px;margin-bottom:10px;">与幻兽契约的驯兽师们交流吧！</p>';
-            html += '<div id="chatMessages" style="background:#f8f9fa;border-radius:12px;padding:15px;height:350px;overflow-y:auto;margin-bottom:15px;display:flex;flex-direction:column;gap:8px;"></div>';
+            html += '<div id="onlineUsers" style="background: #e8f5e9; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 13px;">加载中...</div>
+
+            <div id="chatMessages" style="background:#f8f9fa;border-radius:12px;padding:15px;height:350px;overflow-y:auto;margin-bottom:15px;display:flex;flex-direction:column;gap:8px;"></div>';
             html += '<div style="display:flex;gap:8px;">';
             html += '<input type="text" id="chatInput" style="flex:1;padding:12px;border:2px solid #667eea;border-radius:25px;font-size:14px;outline:none;" placeholder="输入消息...（按Enter发送）">';
             html += '<button id="chatSendBtn" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;padding:12px 25px;font-size:14px;cursor:pointer;font-weight:bold;">发送</button>';
