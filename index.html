@@ -556,22 +556,21 @@
 
         // 领取任务奖励
         function claimTask(taskId, reward, completed) {
-            if (!completed) { alert('未满足条件！'); return; }
+            if (!completed) { return; }
             // 检查是否已领取（用localStorage记录）
             const claimedKey = 'taskClaimed_' + taskId;
             const lastClaim = localStorage.getItem(claimedKey);
             const today = new Date().toDateString();
             const task = tasks.find(t => t.id === taskId);
             if (task.type === 'daily') {
-                if (lastClaim === today) { alert('今日已领取！'); return; }
+                if (lastClaim === today) { return; }
             } else {
-                if (lastClaim === 'done') { alert('已领取过该成就奖励！'); return; }
+                if (lastClaim === 'done') { return; }
             }
             gameData.pg += reward;
             localStorage.setItem(claimedKey, task.type === 'daily' ? today : 'done');
             updateBalances();
             saveGame();
-            alert('🎉 领取成功！+' + reward + ' PG');
             showTasks(document.getElementById('content'));
         }
 
@@ -587,12 +586,11 @@
                     localStorage.removeItem(key);
                 }
             });
-            if (totalDeduct === 0) { alert('没有可重置的记录。'); return; }
+            if (totalDeduct === 0) { return; }
             if (!confirm('重置将扣回已领取的 ' + totalDeduct + ' PG，确定吗？')) return;
             gameData.pg = Math.max(0, gameData.pg - totalDeduct);
             updateBalances();
             saveGame();
-            alert('⚠️ 已重置！扣回 ' + totalDeduct + ' PG，当前 PG：' + gameData.pg);
             showTasks(document.getElementById('content'));
         }
 
@@ -601,13 +599,12 @@
             const today = new Date().toDateString();
             const claimedKey = 'taskClaimed_checkin';
             const lastClaim = localStorage.getItem(claimedKey);
-            if (lastClaim === today) { alert('今日已签到！'); return; }
+            if (lastClaim === today) { return; }
             gameData.pg += reward;
             gameData.totalLoginDays = (gameData.totalLoginDays || 0) + 1;
             localStorage.setItem(claimedKey, today);
             updateBalances();
             saveGame();
-            alert('🎉 签到成功！+' + reward + ' PG \n连续签到 ' + gameData.totalLoginDays + ' 天');
             showTasks(document.getElementById('content'));
         }
         function saveGame() {
@@ -671,8 +668,8 @@
         function startDungeon() {
             var pet = null;
             for (var i = 0; i < gameData.pets.length; i++) { if (gameData.pets[i].uid === dungeonState.dungeonPet) { pet = gameData.pets[i]; break; } }
-            if (!pet) { alert('\u8BF7\u5148\u9009\u62E9\u5BA0\u7269'); return; }
-            if ((pet.hunger || 100) < 20) { alert('\u5BA0\u7269\u592A\u997F\u4E86\uFF0C\u5148\u5582\u98DF\uFF01'); return; }
+            if (!pet) { return; }
+            if ((pet.hunger || 100) < 20) { return; }
             _dPet = pet; _dPower = calcPower(pet);
             _waves = getWaves(dungeonState.stage); _waveIdx = 0;
             _zombies = JSON.parse(JSON.stringify(_waves[0]));
@@ -871,13 +868,12 @@
         }
         function doEquipItem(eqUid) {
             var eq = dungeonState.equip.find(function(e) { return e.uid === eqUid; });
-            if (!eq || !gameData.pets.length) { alert('\u6CA1\u6709\u5BA0\u7269\u6216\u88C5\u5907'); return; }
+            if (!eq || !gameData.pets.length) { return; }
             showSelectPet('\u9009\u62E9\u88C5\u5907\u5230\u54EA\u4E2A\u5BA0\u7269', function(petIdx) {
                 dungeonState.equip = dungeonState.equip.filter(function(e) { return e.uid !== eqUid; });
                 if (!gameData.pets[petIdx].equip) gameData.pets[petIdx].equip = { weapon: null, armor: null, accessory: null };
                 gameData.pets[petIdx].equip[eq.slot] = eq;
                 saveGame(); saveDungeonState(); updateBalances();
-                alert('\u88C5\u5907\u6210\u529F\uFF01');
                 showTab('equip');
             });
         }
@@ -922,14 +918,13 @@
         }
         function doSynthFashion(fid) {
             var f = FASHIONS.find(function(x) { return x.id === fid; });
-            if (!f || (dungeonState.frag[fid] || 0) < f.frag) { alert('\u788E\u7247\u4E0D\u8DB3'); return; }
-            if (!gameData.pets.length) { alert('\u6CA1\u6709\u5BA0\u7269'); return; }
+            if (!f || (dungeonState.frag[fid] || 0) < f.frag) { return; }
+            if (!gameData.pets.length) { return; }
             showSelectPet('\u9009\u62E9\u7A7F\u4E0A\u65F6\u88C5\u7684\u5BA0\u7269', function(petIdx) {
                 dungeonState.frag[fid] = (dungeonState.frag[fid] || 0) - f.frag;
                 gameData.pets[petIdx].fashion = fid;
                 if (dungeonState.fash.indexOf(fid) === -1) dungeonState.fash.push(fid);
                 saveGame(); saveDungeonState(); updateBalances();
-                alert('\u65F6\u88C5\u5408\u6210\u6210\u529F\uFF01');
                 showTab('fashion');
             });
         }
@@ -1200,7 +1195,6 @@ function showTab(tab, evt) {
             const config = hatchConfig[selectedPet.rarity];
             
             if (gameData.pg < config.costPG) {
-                alert('PG币不足！需要 ' + config.costPG + ' PG');
                 return;
             }
             
@@ -1412,7 +1406,6 @@ function showTab(tab, evt) {
         // 出战
         function setBattlePet() {
             if (detailPetIdx === null) return;
-            alert('已将 ' + gameData.pets[detailPetIdx].name + ' 设置为出战宠物！');
             closePetDetail();
         }
 
@@ -1451,7 +1444,6 @@ function showTab(tab, evt) {
             const password = document.getElementById('passwordInput').value;
             
             if (!username || !password) {
-                alert('请输入用户名和密码！');
                 return;
             }
             
@@ -1501,8 +1493,7 @@ function showTab(tab, evt) {
                     return;
                 }
             }
-            alert('用户名或密码错误！');
-        }
+            }
 
         // 注册
         function doRegister() {
@@ -1510,24 +1501,20 @@ function showTab(tab, evt) {
             const password = document.getElementById('passwordInput').value;
             
             if (!username || !password) {
-                alert('请输入用户名和密码！');
                 return;
             }
             
             if (username.length < 2) {
-                alert('用户名至少需要2个字符！');
                 return;
             }
             
             if (password.length < 4) {
-                alert('密码至少需要4个字符！');
                 return;
             }
             
             // 检查是否已存在
             const savedUser = localStorage.getItem('petPlanetUser_' + username);
             if (savedUser) {
-                alert('用户名已存在，请登录或使用其他用户名！');
                 return;
             }
             
@@ -1564,8 +1551,7 @@ function showTab(tab, evt) {
             closeLoginModal();
             showTab('collection');
             
-            alert('🎉 注册成功！已赠送 500 PG 和 2 只创世宠物！');
-        }
+            }
 
         // 关闭登录弹窗
         function closeLoginModal() {
@@ -1824,7 +1810,6 @@ function showTab(tab, evt) {
         // 购买二代宠物蛋
         function buyGen2Egg() {
             if (gameData.pg < 500) {
-                alert('PG币不足！需要 500 PG');
                 return;
             }
             gameData.pg -= 500;
@@ -1849,7 +1834,6 @@ function showTab(tab, evt) {
         // 购买创世蛋
         function buyGenesisEgg() {
             if (gameData.pg < 2600) {
-                alert('PG币不足！需要 2600 PG');
                 return;
             }
             gameData.pg -= 2600;
@@ -1871,7 +1855,6 @@ function showTab(tab, evt) {
         // 购买至尊蛋
         function buySupremeEgg() {
             if (gameData.pg < 2800) {
-                alert('PG币不足！需要 2800 PG');
                 return;
             }
             gameData.pg -= 2800;
@@ -1887,7 +1870,6 @@ function showTab(tab, evt) {
         // 购买传说蛋
         function buyLegendEgg() {
             if (gameData.pg < 2000) {
-                alert('PG币不足！需要 2000 PG');
                 return;
             }
             gameData.pg -= 2000;
@@ -2007,7 +1989,7 @@ function showTab(tab, evt) {
             if (!input) return;
             var text = input.value.trim();
             if (!text) return;
-            if (text.length > 100) { alert('消息不能超过100字'); return; }
+            if (text.length > 100) { return; }
             var now = new Date();
             var hh = now.getHours(); var mm = now.getMinutes();
             var time = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
@@ -2545,7 +2527,15 @@ function showTab(tab, evt) {
     }
 
 // Auto-init
-window.addEventListeneralert('Page loading, calling init...'); ('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
+window.addEventListener('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
 </script>
 </body>
 </html>
+// Auto-init
+window.onload = function() { init(); };
+// Fallback: also try DOMContentLoaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(init, 0);
+}
+// Direct call at end of script as final fallback
+try { init(); } catch(e) { console.error('init() error:', e); }
