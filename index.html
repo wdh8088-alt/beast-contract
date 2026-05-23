@@ -6,102 +6,111 @@
 <title>幻兽契约 - 僵尸闯关</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;overflow-x:hidden}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#1a1a2e;color:#fff;min-height:100vh}
 .page{max-width:480px;margin:0 auto;padding-bottom:80px}
+
+/* Login Screen */
+.login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
+.login-logo{font-size:64px;margin-bottom:10px}
+.login-title{font-size:28px;font-weight:bold;margin-bottom:4px}
+.login-sub{font-size:14px;color:#888;margin-bottom:40px}
+.login-btn{width:80%;max-width:300px;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;margin-bottom:12px}
+.login-btn:active{transform:scale(0.97)}
+.login-hint{font-size:12px;color:#666;margin-top:10px}
 
 /* Header */
 .header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(135deg,#667eea,#764ba2);position:sticky;top:0;z-index:100}
-.header .logo{font-size:20px;font-weight:bold}
-.header .stats{display:flex;gap:12px;font-size:14px}
-.header .stat{background:rgba(255,255,255,0.2);padding:4px 10px;border-radius:12px}
+.logo{font-size:20px;font-weight:bold}
+.stats{display:flex;gap:10px}
+.stat{background:rgba(255,255,255,0.2);padding:4px 10px;border-radius:12px;font-size:13px}
 
 /* Tab Bar */
 .tab-bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:#16213e}
-.tab{flex:1;min-width:calc(25% - 6px);text-align:center;padding:8px 4px;border-radius:10px;font-size:12px;cursor:pointer;background:#0f3460;color:#aaa;transition:all .2s}
+.tab{flex:1;min-width:calc(25% - 6px);text-align:center;padding:8px 2px;border-radius:10px;font-size:11px;cursor:pointer;background:#0f3460;color:#aaa;transition:all .2s;-webkit-tap-highlight-color:transparent}
 .tab.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-.tab:active{transform:scale(0.95)}
 
 /* Content */
 .content{padding:12px}
+.section-title{font-size:16px;font-weight:bold;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #333}
+.empty{text-align:center;color:#555;padding:40px 0;font-size:14px}
 
 /* Pet Grid */
 .pet-grid{display:flex;flex-wrap:wrap;gap:10px}
-.pet-card{width:calc(50% - 5px);background:#16213e;border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.pet-card{width:calc(50% - 5px);background:#16213e;border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent}
 .pet-card:active{transform:scale(0.97)}
 .pet-card.sel{border-color:#667eea;box-shadow:0 0 12px rgba(102,126,234,0.5)}
-.pet-card .img{font-size:48px;display:block;margin-bottom:4px}
-.pet-card .name{font-size:14px;font-weight:bold;display:block}
-.pet-card .info{font-size:11px;color:#888;display:block}
-.pet-card .happy{font-size:11px;color:#f39c12}
+.pet-img{font-size:48px;display:block;margin-bottom:4px}
+.pet-name{font-size:14px;font-weight:bold;display:block}
+.pet-info{font-size:11px;color:#888;display:block}
+.pet-happy{font-size:11px;color:#f39c12}
 
-/* Rarity borders */
+/* Rarity */
 .r-G0{border-left:4px solid #FFD700}
 .r-S-plus{border-left:4px solid #FF00FF}
-.r-SSR,.r-SR{border-left:4px solid #9B59B6}
-.r-SR{border-left-color:#3498DB}
+.r-SR{border-left:4px solid #3498DB}
+.r-SSR{border-left:4px solid #9B59B6}
 .r-R{border-left:4px solid #2ECC71}
 .r-N{border-left:4px solid #555}
 
-/* Sections */
-.section-title{font-size:16px;font-weight:bold;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #333}
+/* Filter */
+.filter-bar{display:flex;gap:6px;margin-bottom:12px}
+.filter-btn{flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;background:#0f3460;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.filter-btn.active{background:#667eea;color:#fff}
 
 /* Hatch */
-.hatch-area{text-align:center;padding:30px 0}
-.egg-btn{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#ffecd2,#fcb69f);border:none;font-size:60px;cursor:pointer;display:block;margin:0 auto;box-shadow:0 4px 16px rgba(252,182,159,0.4);transition:transform .1s}
-.egg-btn:active{transform:scale(0.92)}
-.egg-btn.shaking{animation:shake .3s infinite}
-@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
-.hatch-cost{font-size:13px;color:#888;margin-top:8px}
 .rarity-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px;background:#0f3460;border-radius:10px;margin-bottom:12px}
-.rarity-chip{padding:4px 10px;border-radius:6px;font-size:11px;color:#fff}
+.chip{padding:4px 10px;border-radius:6px;font-size:11px;color:#fff}
+.hatch-area{text-align:center;padding:30px 0}
+.egg-btn{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#ffecd2,#fcb69f);border:none;font-size:60px;cursor:pointer;display:block;margin:0 auto;box-shadow:0 4px 16px rgba(252,182,159,0.4)}
+.egg-cost{font-size:13px;color:#888;margin-top:8px}
 .result-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:200}
 .result-box{background:#16213e;border-radius:16px;padding:24px;text-align:center;width:80%}
 .result-name{font-size:22px;font-weight:bold;display:block;margin-bottom:4px}
-.result-rarity{font-size:14px;font-weight:bold;display:block;margin-bottom:8px}
-.result-skill{font-size:13px;color:#e67e22;display:block;margin-bottom:4px}
-.result-close{margin-top:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:14px}
+.result-rarity{font-size:14px;font-weight:bold;display:block;margin-bottom:6px}
+.result-skill{font-size:13px;color:#e67e22;display:block}
+.result-btn{margin-top:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:14px}
 
 /* Dungeon */
 .battle-field{position:relative;width:100%;height:280px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.pet-sprite{position:absolute;transition:left .25s ease;text-align:center}
-.pet-circle{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;box-shadow:0 4px 12px rgba(102,126,234,0.5)}
-.pet-sprite.attacking .pet-circle{transform:scale(1.2);box-shadow:0 4px 20px rgba(102,126,234,0.8)}
-.zombie-sprite{position:absolute;transition:all .25s ease;text-align:center}
-.zombie-circle{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6B8E23,#556B2F);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold}
-.zombie-sprite.hit .zombie-circle{background:linear-gradient(135deg,#FF4444,#FF0000)!important;transform:scale(1.25)}
+.pet-sprite{position:absolute;transition:left .25s ease;text-align:center;z-index:10}
+.pet-circle{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold}
+.pet-sprite.atk .pet-circle{transform:scale(1.2)}
+.zombie-sprite{position:absolute;transition:all .25s ease;text-align:center;z-index:5}
+.zombie-circle{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6B8E23,#556B2F);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold}
+.zombie-sprite.hit .zombie-circle{background:linear-gradient(135deg,#FF4444,#FF0000)!important;transform:scale(1.2)}
 .zombie-sprite.dead .zombie-circle{opacity:0.2;transform:rotate(90deg) scale(0.5)}
 .hp-bar{width:52px;height:6px;background:#333;border-radius:3px;margin-top:2px;overflow:hidden}
 .hp-fill{height:100%;background:#E74C3C;border-radius:3px;transition:width .2s}
-.hp-fill.pet-hp{background:#2ECC71}
+.hp-fill.green{background:#2ECC71}
 .hp-text{font-size:10px;color:#ccc;text-align:center;display:block}
 .wave-bar{display:flex;justify-content:space-between;padding:6px 10px;background:#0f3460;border-radius:8px;font-size:12px;color:#aaa;margin-bottom:8px}
-.skill-btn{width:100%;padding:12px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;margin-bottom:8px}
+.skill-btn{width:100%;padding:12px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;margin-bottom:8px;-webkit-tap-highlight-color:transparent}
 .skill-btn:disabled{background:#555;color:#888}
 .battle-log{max-height:120px;overflow-y:auto;background:#0f3460;border-radius:8px;padding:8px}
 .log-line{font-size:11px;color:#888;padding:2px 0;display:block}
-.start-btn{width:100%;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:bold}
+.start-btn{width:100%;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:bold;-webkit-tap-highlight-color:transparent}
 .reward-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:200}
 .reward-box{background:#16213e;border-radius:16px;padding:24px;text-align:center;width:80%}
 .reward-title{font-size:22px;font-weight:bold;display:block;margin-bottom:12px}
 .reward-item{display:block;font-size:14px;margin:6px 0}
-.reward-equip{padding:10px;border-radius:8px;border:3px solid;margin:8px 0;text-align:left}
-.reward-equip span{display:block;font-size:12px}
+.reward-eq{padding:10px;border-radius:8px;border:3px solid;margin:8px 0;text-align:left}
+.reward-eq span{display:block;font-size:12px}
 .reward-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:14px;margin-top:10px}
 
 /* Equipment */
 .sub-tabs{display:flex;gap:8px;margin-bottom:12px}
-.sub-tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;background:#0f3460;color:#888;cursor:pointer}
+.sub-tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;background:#0f3460;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sub-tab.active{background:#667eea;color:#fff}
 .equip-item{display:flex;align-items:center;justify-content:space-between;background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
-.equip-info{flex:1}
-.equip-name{font-size:14px;font-weight:bold;display:block}
-.equip-tier{font-size:11px;color:#888;display:block}
-.equip-bonus{font-size:13px;color:#e67e22;font-weight:bold;display:block}
-.equip-btn{background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
-.equipped-pet{background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
-.equipped-name{font-size:14px;font-weight:bold;display:block;margin-bottom:6px}
-.equipped-slot{padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;border-left:4px solid;background:#0f3460}
-.unequip{color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px}
+.eq-info{flex:1}
+.eq-name{font-size:14px;font-weight:bold;display:block}
+.eq-tier{font-size:11px;color:#888;display:block}
+.eq-bonus{font-size:13px;color:#e67e22;font-weight:bold;display:block}
+.eq-btn{background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
+.epet{background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
+.epet-name{font-size:14px;font-weight:bold;display:block;margin-bottom:6px}
+.epet-slot{padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;border-left:4px solid;background:#0f3460}
+.epet-unequip{color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px}
 .legend-row{display:flex;justify-content:center;gap:14px;padding:10px;background:#0f3460;border-radius:8px;margin-top:10px;font-size:12px}
 
 /* Fashion */
@@ -117,9 +126,9 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#1a1a2e;c
 .frag-item{display:flex;justify-content:space-between;padding:10px 12px;background:#16213e;border-radius:8px;margin-bottom:6px;font-size:13px}
 
 /* Shop */
-.shop-category{margin-bottom:16px}
+.shop-cat{margin-bottom:16px}
 .shop-title{font-size:14px;font-weight:bold;margin-bottom:8px;padding-left:8px;border-left:4px solid #667eea}
-.shop-item{background:#16213e;padding:14px;border-radius:10px;margin-bottom:8px;cursor:pointer}
+.shop-item{background:#16213e;padding:14px;border-radius:10px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .shop-item:active{background:#1a2744}
 .shop-name{font-size:14px;font-weight:bold;display:block}
 .shop-desc{font-size:11px;color:#888;display:block;margin:2px 0}
@@ -140,58 +149,38 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#1a1a2e;c
 .care-name{font-size:16px;font-weight:bold}
 .care-power{font-size:12px;color:#aaa}
 .status-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
-.status-bar{flex:1;height:8px;background:#333;border-radius:4px;overflow:hidden}
-.status-fill{height:100%;border-radius:4px;transition:width .3s}
-.hunger-fill{background:linear-gradient(90deg,#f39c12,#e67e22)}
-.clean-fill{background:linear-gradient(90deg,#3498db,#2980b9)}
-.happy-fill{background:linear-gradient(90deg,#2ecc71,#27ae60)}
+.sbar{flex:1;height:8px;background:#333;border-radius:4px;overflow:hidden}
+.sfill{height:100%;border-radius:4px;transition:width .3s}
+.fill-hunger{background:linear-gradient(90deg,#f39c12,#e67e22)}
+.fill-clean{background:linear-gradient(90deg,#3498db,#2980b9)}
+.fill-happy{background:linear-gradient(90deg,#2ecc71,#27ae60)}
 .care-btns{display:flex;gap:8px;margin-top:10px}
 .care-btn{flex:1;padding:10px;background:#667eea;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer}
 .care-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
-.care-pet{width:80px;text-align:center;background:#0f3460;padding:8px;border-radius:8px;cursor:pointer;flex-shrink:0;font-size:11px}
+.care-pet{width:80px;text-align:center;background:#0f3460;padding:8px;border-radius:8px;cursor:pointer;flex-shrink:0;font-size:11px;-webkit-tap-highlight-color:transparent}
 .care-pet.sel{background:#667eea}
 
-/* Empty */
-.empty{text-align:center;color:#555;padding:40px 0;font-size:14px}
+/* Select modal */
+.select-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:300}
+.select-box{background:#16213e;border-radius:16px;padding:16px;text-align:center;width:85%}
+.select-box h3{font-size:15px;margin-bottom:10px}
+.select-item{padding:10px;background:#0f3460;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;text-align:left}
+.select-item:active{background:#1a3a5c}
+.select-cancel{padding:10px;color:#888;font-size:13px;margin-top:6px}
 
-/* Filter */
-.filter-bar{display:flex;gap:6px;margin-bottom:12px}
-.filter-btn{flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;background:#0f3460;color:#888;cursor:pointer}
-.filter-btn.active{background:#667eea;color:#fff}
+/* Game over / Alerts */
+.game-over-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:200}
+.game-over-box{background:#16213e;border-radius:16px;padding:30px;text-align:center;width:80%}
+.game-over-title{font-size:24px;font-weight:bold;display:block;margin-bottom:10px}
+.game-over-sub{font-size:14px;color:#aaa;display:block;margin-bottom:16px}
+.game-over-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 30px;border-radius:10px;cursor:pointer;font-size:15px}
 </style>
 </head>
 <body>
-<div class="page">
-
-<!-- Header -->
-<div class="header">
-  <div class="logo">幻兽契约</div>
-  <div class="stats">
-    <div class="stat">💰 <span id="pgBalance">10000</span></div>
-    <div class="stat">🐾 <span id="petCount">0</span>只</div>
-  </div>
-</div>
-
-<!-- Tab Bar -->
-<div class="tab-bar">
-  <div class="tab active" data-tab="collection">🐾宠物</div>
-  <div class="tab" data-tab="hatch">🥚孵化</div>
-  <div class="tab" data-tab="dungeon">⚔️闯关</div>
-  <div class="tab" data-tab="equip">🗡️装备</div>
-  <div class="tab" data-tab="fashion">👘时装</div>
-  <div class="tab" data-tab="shop">🏪商店</div>
-  <div class="tab" data-tab="tasks">📋任务</div>
-  <div class="tab" data-tab="care">❤️养成</div>
-</div>
-
-<!-- Content -->
-<div class="content" id="content"></div>
-
-</div>
-
+<div class="page" id="app"></div>
 <script>
 // ===== DATA =====
-const PETS = [
+var PETS=[
   {id:'kungfu_panda',name:'功夫熊猫',profession:'功夫',img:'🐼',basePower:150,rarity:'SR',skill:'猛虎拳',skillDmg:1.5},
   {id:'kungfu_tiger',name:'功夫虎',profession:'功夫',img:'🐯',basePower:140,rarity:'SR',skill:'碎岩击',skillDmg:1.6},
   {id:'kungfu_fox',name:'功夫狐',profession:'功夫',img:'🦊',basePower:130,rarity:'R',skill:'旋风腿',skillDmg:1.3},
@@ -229,30 +218,20 @@ const PETS = [
   {id:'chef_hamster',name:'厨师仓鼠',profession:'厨师',img:'🐹',basePower:90,rarity:'N',skill:'坚果弹',skillDmg:1.1},
   {id:'chef_duck',name:'厨师鸭',profession:'厨师',img:'🦆',basePower:85,rarity:'N',skill:'调味粉',skillDmg:1.1}
 ];
-
-const RARITY = {G0:{text:'G0至尊',color:'#FFD700',w:2},'S-plus':{text:'S+传说',color:'#FF00FF',w:10},SSR:{text:'SSR精英',color:'#9B59B6',w:20},SR:{text:'SR稀有',color:'#3498DB',w:18},R:{text:'R普通',color:'#2ECC71',w:25},N:{text:'N普通',color:'#999',w:25}};
-
-const ZOMBIE = [
-  {id:'z_normal',name:'普通僵尸',hp:200,atk:15,speed:1},
-  {id:'z_runner',name:'奔跑僵尸',hp:150,atk:20,speed:2},
-  {id:'z_bucket',name:'铁桶僵尸',hp:400,atk:15,speed:0.7},
-  {id:'z_spitter',name:'喷吐僵尸',hp:180,atk:30,speed:0.8},
-  {id:'z_giant',name:'巨型僵尸',hp:600,atk:35,speed:0.5},
-  {id:'z_boss',name:'僵尸王',hp:1200,atk:50,speed:0.6}
+var RARITY={G0:{t:'G0至尊',c:'#FFD700',w:2},'S-plus':{t:'S+传说',c:'#FF00FF',w:10},SSR:{t:'SSR精英',c:'#9B59B6',w:20},SR:{t:'SR稀有',c:'#3498DB',w:18},R:{t:'R普通',c:'#2ECC71',w:25},N:{t:'N普通',c:'#999',w:25}};
+var ZOMBIE=[
+  {id:'z1',name:'普通僵尸',hp:200,atk:15,spd:1},
+  {id:'z2',name:'奔跑僵尸',hp:150,atk:20,spd:2},
+  {id:'z3',name:'铁桶僵尸',hp:400,atk:15,spd:0.7},
+  {id:'z4',name:'喷吐僵尸',hp:180,atk:30,spd:0.8},
+  {id:'z5',name:'巨型僵尸',hp:600,atk:35,spd:0.5},
+  {id:'z6',name:'僵尸王',hp:1200,atk:50,spd:0.6}
 ];
-
-const EQUIP_TIERS = [
-  {t:'white',n:'白装',c:'#CCC',b:5,r:40},
-  {t:'blue',n:'蓝装',c:'#3498DB',b:15,r:30},
-  {t:'purple',n:'紫装',c:'#9B59B6',b:35,r:18},
-  {t:'red',n:'红装',c:'#E74C3C',b:70,r:9},
-  {t:'orange',n:'橙装',c:'#FF8C00',b:150,r:3}
-];
-const SLOTS = ['weapon','armor','accessory'];
-const SLOT_NAMES = {weapon:'武器',armor:'防具',accessory:'饰品'};
-const PREFIXES = {weapon:['木剑','铁剑','精钢剑','玄铁剑','仙剑'],armor:['布甲','皮甲','锁子甲','玄铁甲','仙甲'],accessory:['木环','铜戒','银链','金坠','仙符']};
-
-const FASHIONS = [
+var ETIERS=[{t:'white',n:'白装',c:'#CCC',b:5,r:40},{t:'blue',n:'蓝装',c:'#3498DB',b:15,r:30},{t:'purple',n:'紫装',c:'#9B59B6',b:35,r:18},{t:'red',n:'红装',c:'#E74C3C',b:70,r:9},{t:'orange',n:'橙装',c:'#FF8C00',b:150,r:3}];
+var SLOTS=['weapon','armor','accessory'];
+var SLOT_N={weapon:'武器',armor:'防具',accessory:'饰品'};
+var PREFIXES={weapon:['木剑','铁剑','精钢剑','玄铁剑','仙剑'],armor:['布甲','皮甲','锁子甲','玄铁甲','仙甲'],accessory:['木环','铜戒','银链','金坠','仙符']};
+var FASHIONS=[
   {id:'m1',name:'青衫修士',g:'male',frag:10,desc:'青衫长袍，剑气纵横',pb:30},
   {id:'m2',name:'金甲战神',g:'male',frag:15,desc:'金甲披身，战意冲天',pb:50},
   {id:'m3',name:'龙袍帝君',g:'male',frag:30,desc:'龙袍加身，号令天下',pb:100},
@@ -260,8 +239,7 @@ const FASHIONS = [
   {id:'f2',name:'紫霞神女',g:'female',frag:15,desc:'紫霞加身，神威浩荡',pb:50},
   {id:'f3',name:'凤冠皇后',g:'female',frag:30,desc:'凤冠霞帔，母仪天下',pb:100}
 ];
-
-const SHOP = [
+var SHOP=[
   {id:'egg1',name:'至尊扭蛋',desc:'2%概率G0至尊',price:1000,type:'egg',rarity:'G0'},
   {id:'egg2',name:'传说扭蛋',desc:'10%概率S+传说',price:500,type:'egg',rarity:'S-plus'},
   {id:'egg3',name:'普通扭蛋',desc:'随机宠物',price:100,type:'egg'},
@@ -282,721 +260,845 @@ const SHOP = [
 ];
 
 // ===== STATE =====
-let state = {
-  pg: 10000,
-  pets: [],
-  tasks: [{id:1,n:'每日签到',d:'每天签到',r:50,c:false},{id:2,n:'孵化宠物',d:'孵化一只宠物',r:30,c:false},{id:3,n:'闯关一次',d:'完成一次闯关',r:40,c:false},{id:4,n:'喂食宠物',d:'给宠物喂食',r:20,c:false}],
-  stage: 1,
-  equipment: [],
-  fragments: {},
-  fashions: [],
-  tab: 'collection',
-  filter: 'all',
-  dungeonPet: null,
-  dungeonActive: false,
-  selectedCare: null,
-  equipTab: 'list',
-  fashionTab: 'list'
+var ST={
+  loggedIn:false,
+  userName:'',
+  pg:10000,
+  pets:[],
+  tasks:[{id:1,n:'每日签到',d:'每天签到',r:50,c:false},{id:2,n:'孵化宠物',d:'孵化一只宠物',r:30,c:false},{id:3,n:'闯关一次',d:'完成一次闯关',r:40,c:false},{id:4,n:'喂食宠物',d:'给宠物喂食',r:20,c:false}],
+  stage:1,
+  equip:[],
+  frag:{},
+  fash:[],
+  tab:'collection',
+  filter:'all',
+  dungeonPet:null,
+  dungeonActive:false,
+  selectedCare:null,
+  equipTab:'list',
+  fashionTab:'list'
 };
 
+var _pet=null,_power=0,_waves=[],_waveIdx=0,_zombies=[],_skillCd=0,_dungeonLog=[];
+var _atkTimer=null,_zTimer=null;
+var _resultPet=null;
+var _reward=null;
+
+// ===== INIT =====
+function load(){
+  try{
+    var d=JSON.parse(localStorage.getItem('bc2')||'null');
+    if(d){
+      ST.loggedIn=d.loggedIn||false;
+      ST.userName=d.userName||'';
+      ST.pg=d.pg||10000;
+      ST.pets=d.pets||[];
+      ST.tasks=d.tasks||ST.tasks;
+      ST.stage=d.stage||1;
+      ST.equip=d.equip||[];
+      ST.frag=d.frag||{};
+      ST.fash=d.fash||[];
+    }
+  }catch(e){}
+}
+function save(){
+  try{localStorage.setItem('bc2',JSON.stringify({
+    loggedIn:ST.loggedIn,userName:ST.userName,pg:ST.pg,pets:ST.pets,
+    tasks:ST.tasks,stage:ST.stage,equip:ST.equip,frag:ST.frag,fash:ST.fash
+  }));}catch(e){}
+}
 load();
-render();
 
 // ===== HELPERS =====
-function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
-function randRarity() {
-  const total = Object.values(RARITY).reduce((s,v)=>s+v.w,0);
-  let r = Math.random()*total;
-  for(const [k,v] of Object.entries(RARITY)){r-=v.w;if(r<=0)return k;}
-  return 'N';
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function rr(){
+  var total=0;for(var k in RARITY)total+=RARITY[k].w;
+  var r=Math.random()*total;
+  for(var k in RARITY){r-=RARITY[k].w;if(r<=0)return k;}
+  return'N';
 }
-function hatchPet(r) {
-  const pool = PETS.filter(p=>p.rarity===r);
-  const base = pool[Math.floor(Math.random()*pool.length)]||PETS.find(p=>p.rarity==='N');
-  return {...base,uid:uid(),level:1,power:base.basePower+Math.floor(Math.random()*20),hunger:100,clean:100,happy:100,equip:{weapon:null,armor:null,accessory:null},fashion:null};
-}
-function calcPower(pet) {
-  let p = pet.power||0;
-  if(pet.equip) SLOTS.forEach(s=>{if(pet.equip[s])p+=pet.equip[s].b||0;});
-  if(pet.fashion){const f=FASHIONS.find(x=>x.id===pet.fashion);if(f)p+=f.pb||0;}
+function hp(pet){
+  var p=pet.power||0;
+  if(pet.equip)for(var i=0;i<SLOTS.length;i++){if(pet.equip[SLOTS[i]])p+=pet.equip[SLOTS[i]].b||0;}
+  if(pet.fashion){var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===pet.fashion){f=FASHIONS[i];break;}if(f)p+=f.pb||0;}
   p=Math.floor(p*(1+((pet.happy||100)-50)*0.004));
   return p;
 }
-function save() { localStorage.setItem('bc_data',JSON.stringify(state)); }
-function load() {
-  try {
-    const d = JSON.parse(localStorage.getItem('bc_data')||'null');
-    if(d){Object.assign(state,d);}
-  } catch(e){}
+function mkPet(r){
+  var pool=[];for(var i=0;i<PETS.length;i++)if(PETS[i].rarity===r)pool.push(PETS[i]);
+  var base=pool.length?pool[Math.floor(Math.random()*pool.length)]:PETS[0];
+  return{uid:uid(),id:base.id,name:base.name,profession:base.profession,img:base.img,basePower:base.basePower,rarity:r,skill:base.skill,skillDmg:base.skillDmg,power:base.basePower+Math.floor(Math.random()*20),level:1,hunger:100,clean:100,happy:100,equip:{weapon:null,armor:null,accessory:null},fashion:null};
 }
-function getWaves(stage) {
-  const waves=[];
-  const count=Math.min(3,1+Math.floor(stage/5));
-  for(let w=0;w<count;w++){
-    const wave=[];
-    const num=2+Math.floor(stage/3)+w;
-    for(let i=0;i<num;i++){
-      let zi;
-      if(stage<3)zi=0;
-      else if(stage<6)zi=Math.floor(Math.random()*2);
-      else if(stage<10)zi=Math.floor(Math.random()*4);
-      else zi=Math.floor(Math.random()*5);
-      const z=ZOMBIE[zi];
-      const hpM=1+(stage-1)*0.3;
-      const atkM=1+(stage-1)*0.2;
-      wave.push({...z,uid:uid(),maxHp:Math.floor(z.hp*hpM),hp:Math.floor(z.hp*hpM),atk:Math.floor(z.atk*atkM),x:200+i*30,y:50+(i%3)*55,hit:false,dead:false});
+function fpets(){
+  var ps=ST.pets;
+  if(ST.filter==='legend'){ps=ps.filter(function(p){return['G0','S-plus','SSR'].indexOf(p.rarity)>-1;});}
+  else if(ST.filter==='elite'){ps=ps.filter(function(p){return['SR','SSR'].indexOf(p.rarity)>-1;});}
+  else if(ST.filter==='normal'){ps=ps.filter(function(p){return['R','N'].indexOf(p.rarity)>-1;});}
+  return ps;
+}
+function getWaves(stage){
+  var waves=[];
+  var count=Math.min(3,1+Math.floor(stage/5));
+  for(var w=0;w<count;w++){
+    var wave=[];
+    var num=2+Math.floor(stage/3)+w;
+    for(var i=0;i<num;i++){
+      var zi=stage<3?0:stage<6?Math.floor(Math.random()*2):stage<10?Math.floor(Math.random()*4):Math.floor(Math.random()*5);
+      if(stage%5===0&&stage>0&&w===count-1&&i===num-1)zi=5;
+      var z=ZOMBIE[zi];
+      var hpM=1+(stage-1)*0.3;
+      var atkM=1+(stage-1)*0.2;
+      wave.push({uid:uid(),name:z.name,hp:Math.floor(z.hp*hpM),maxHp:Math.floor(z.hp*hpM),atk:Math.floor(z.atk*atkM),spd:z.spd,x:200+i*28,y:50+(i%3)*55,hit:false,dead:false});
     }
     waves.push(wave);
   }
-  if(stage%5===0&&stage>0){
-    const boss=ZOMBIE[5];
-    const hpM=1+(stage-1)*0.5;
-    waves[waves.length-1].push({...boss,uid:uid(),maxHp:Math.floor(boss.hp*hpM),hp:Math.floor(boss.hp*hpM),atk:Math.floor(boss.atk*hpM),x:260,y:80,hit:false,dead:false});
-  }
   return waves;
 }
-function dropEquip(stage) {
-  const bonus=Math.min(stage*2,30);
-  let roll=Math.random()*100,acc=0;
-  let ti=0;
-  for(let i=0;i<EQUIP_TIERS.length;i++){
-    const rate=i<2?EQUIP_TIERS[i].r-bonus/2:i<3?EQUIP_TIERS[i].r+bonus/4:i<4?EQUIP_TIERS[i].r+bonus/4:EQUIP_TIERS[i].r+bonus/6;
+function dropEquip(stage){
+  var bonus=Math.min(stage*2,30);
+  var roll=Math.random()*100,acc=0,ti=0;
+  for(var i=0;i<ETIERS.length;i++){
+    var rate=i<2?ETIERS[i].r-bonus/2:i<3?ETIERS[i].r+bonus/4:i<4?ETIERS[i].r+bonus/4:ETIERS[i].r+bonus/6;
     acc+=Math.max(rate,1);
     if(roll<acc){ti=i;break;}
   }
-  const t=EQUIP_TIERS[ti];
-  const slot=SLOTS[Math.floor(Math.random()*3)];
-  return {uid:uid(),name:PREFIXES[slot][ti],slot,t:t.t,n:t.n,c:t.c,b:t.b+Math.floor(Math.random()*t.b*0.3),stage};
+  var t=ETIERS[ti],slot=SLOTS[Math.floor(Math.random()*3)];
+  return{uid:uid(),name:PREFIXES[slot][ti],slot:slot,t:t.t,n:t.n,c:t.c,b:t.b+Math.floor(Math.random()*t.b*0.3),stage:stage};
 }
-
-// ===== TABS =====
-document.querySelectorAll('.tab').forEach(el=>{
-  el.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    el.classList.add('active');
-    state.tab=el.dataset.tab;
-    render();
-  });
-});
 
 // ===== RENDER =====
-function render() {
-  const c=document.getElementById('content');
-  document.getElementById('pgBalance').textContent=state.pg;
-  document.getElementById('petCount').textContent=state.pets.length;
-  switch(state.tab){
-    case'collection':c.innerHTML=renderCollection();break;
-    case'hatch':c.innerHTML=renderHatch();break;
-    case'dungeon':c.innerHTML=renderDungeon();break;
-    case'equip':c.innerHTML=renderEquip();break;
-    case'fashion':c.innerHTML=renderFashion();break;
-    case'shop':c.innerHTML=renderShop();break;
-    case'tasks':c.innerHTML=renderTasks();break;
-    case'care':c.innerHTML=renderCare();break;
+function render(){
+  var app=document.getElementById('app');
+  if(!ST.loggedIn){
+    app.innerHTML=renderLogin();
+    return;
   }
-  bindEvents();
+  app.innerHTML=renderHeader()+renderTabBar()+'<div class="content" id="content">'+renderContent()+'</div>';
+  attachEvents();
 }
 
-function filteredPets() {
-  let ps=state.pets;
-  if(state.filter==='legend')ps=ps.filter(p=>['G0','S-plus','SSR'].includes(p.rarity));
-  else if(state.filter==='elite')ps=ps.filter(p=>['SR','SSR'].includes(p.rarity));
-  else if(state.filter==='normal')ps=ps.filter(p=>['R','N'].includes(p.rarity));
-  return ps;
+function renderLogin(){
+  return '<div class="login-screen">'+
+    '<div class="login-logo">🐾</div>'+
+    '<div class="login-title">幻兽契约</div>'+
+    '<div class="login-sub">僵尸闯关 · 装备收集 · 时装合成</div>'+
+    '<button class="login-btn" id="loginBtn">微信一键登录</button>'+
+    '<button class="login-btn" id="guestBtn" style="background:#0f3460">游客登录</button>'+
+    '<div class="login-hint">登录即表示同意用户协议</div>'+
+  '</div>';
 }
 
-function renderCollection() {
-  const ps=filteredPets();
-  if(!ps.length)return'<div class="empty">还没有宠物，去孵化吧！</div>';
-  return `
-    <div class="filter-bar">
-      <div class="filter-btn ${state.filter==='all'?'active':''}" data-filter="all">全部</div>
-      <div class="filter-btn ${state.filter==='legend'?'active':''}" data-filter="legend">传说</div>
-      <div class="filter-btn ${state.filter==='elite'?'active':''}" data-filter="elite">精英</div>
-      <div class="filter-btn ${state.filter==='normal'?'active':''}" data-filter="normal">普通</div>
-    </div>
-    <div class="pet-grid">
-      ${ps.map(p=>`
-        <div class="pet-card r-${p.rarity}" data-uid="${p.uid}" data-action="detail">
-          <span class="img">${p.fashion?('🧑'+(FASHIONS.find(f=>f.id===p.fashion)?.[0]||'🦸'):p.img)}</span>
-          <span class="name">${p.name}</span>
-          <span class="info">Lv.${p.level||1} ⚔️${calcPower(p)}</span>
-          <span class="happy">😊${p.happy||100}%</span>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function renderHeader(){
+  return '<div class="header">'+
+    '<div class="logo">幻兽契约</div>'+
+    '<div class="stats">'+
+      '<div class="stat">💰 <span id="hdr_pg">'+ST.pg+'</span></div>'+
+      '<div class="stat">🐾 '+ST.pets.length+'只</div>'+
+    '</div>'+
+  '</div>';
 }
 
-function renderHatch() {
-  return `
-    <div class="rarity-row">
-      <span class="rarity-chip" style="background:#FFD700;color:#333">G0 2%</span>
-      <span class="rarity-chip" style="background:#FF00FF">S+ 10%</span>
-      <span class="rarity-chip" style="background:#9B59B6">SSR 20%</span>
-      <span class="rarity-chip" style="background:#3498DB">SR 18%</span>
-      <span class="rarity-chip" style="background:#2ECC71">R 25%</span>
-      <span class="rarity-chip" style="background:#555">N 25%</span>
-    </div>
-    <div class="hatch-area">
-      <button class="egg-btn" id="hatchBtn">🥚</button>
-      <div class="hatch-cost">100 PG / 次</div>
-    </div>
-  `;
+function renderTabBar(){
+  var tabs=['🐾宠物','🥚孵化','⚔️闯关','🗡️装备','👘时装','🏪商店','📋任务','❤️养成'];
+  var ids=['collection','hatch','dungeon','equip','fashion','shop','tasks','care'];
+  var html='<div class="tab-bar">';
+  for(var i=0;i<tabs.length;i++){
+    html+='<div class="tab'+(ST.tab===ids[i]?' active':'')+'" data-tab="'+ids[i]+'">'+tabs[i]+'</div>';
+  }
+  html+='</div>';
+  return html;
 }
 
-function renderDungeon() {
-  if(state.dungeonActive)return renderDungeonBattle();
-  if(state.rewardData)return renderReward();
-  const ps=state.pets;
+function renderContent(){
+  switch(ST.tab){
+    case'collection':return renderCollection();
+    case'hatch':return renderHatch();
+    case'dungeon':return renderDungeon();
+    case'equip':return renderEquip();
+    case'fashion':return renderFashion();
+    case'shop':return renderShop();
+    case'tasks':return renderTasks();
+    case'care':return renderCare();
+  }
+  return'';
+}
+
+// ===== COLLECTION =====
+function renderCollection(){
+  var ps=fpets();
+  if(!ps.length)return'<div class="empty">还没有宠物，先去孵化吧！</div>';
+  var html='<div class="filter-bar">'+
+    '<div class="filter-btn'+(ST.filter==='all'?' active':'')+'" data-act="filter" data-v="all">全部</div>'+
+    '<div class="filter-btn'+(ST.filter==='legend'?' active':'')+'" data-act="filter" data-v="legend">传说</div>'+
+    '<div class="filter-btn'+(ST.filter==='elite'?' active':'')+'" data-act="filter" data-v="elite">精英</div>'+
+    '<div class="filter-btn'+(ST.filter==='normal'?' active':'')+'" data-act="filter" data-v="normal">普通</div>'+
+  '</div><div class="pet-grid">';
+  for(var i=0;i<ps.length;i++){
+    var p=ps[i];
+    html+='<div class="pet-card r-'+p.rarity+'" data-act="petDetail" data-uid="'+p.uid+'">'+
+      '<span class="pet-img">'+p.img+'</span>'+
+      '<span class="pet-name">'+p.name+'</span>'+
+      '<span class="pet-info">Lv.'+(p.level||1)+' ⚔️'+hp(p)+'</span>'+
+      '<span class="pet-happy">😊'+(p.happy||100)+'%</span>'+
+    '</div>';
+  }
+  return html+'</div>';
+}
+
+// ===== HATCH =====
+function renderHatch(){
+  return '<div class="rarity-row">'+
+    '<span class="chip" style="background:#FFD700;color:#333">G0 2%</span>'+
+    '<span class="chip" style="background:#FF00FF">S+ 10%</span>'+
+    '<span class="chip" style="background:#9B59B6">SSR 20%</span>'+
+    '<span class="chip" style="background:#3498DB">SR 18%</span>'+
+    '<span class="chip" style="background:#2ECC71">R 25%</span>'+
+    '<span class="chip" style="background:#555">N 25%</span>'+
+  '</div>'+
+  '<div class="hatch-area">'+
+    '<button class="egg-btn" id="hatchBtn">🥚</button>'+
+    '<div class="egg-cost">100 PG / 次</div>'+
+  '</div>';
+}
+
+// ===== DUNGEON =====
+function renderDungeon(){
+  if(ST.dungeonActive)return renderBattle();
+  if(_reward)return renderReward();
+  var ps=ST.pets;
   if(!ps.length)return'<div class="empty">还没有宠物，先去孵化！</div>';
-  return `
-    <div class="section-title">⚔️ 僵尸闯关 - 第${state.stage}关</div>
-    <div style="font-size:12px;color:#888;margin-bottom:10px">选择出战宠物</div>
-    <div class="pet-grid">
-      ${ps.map(p=>`
-        <div class="pet-card r-${p.rarity} ${state.dungeonPet===p.uid?'sel':''}" data-uid="${p.uid}" data-action="selDungeon">
-          <span class="img">${p.img}</span>
-          <span class="name">${p.name}</span>
-          <span class="info">⚔️${calcPower(p)}</span>
-          <span class="happy">😊${p.happy||100}%</span>
-        </div>
-      `).join('')}
-    </div>
-    <button class="start-btn" data-action="startDungeon" ${!state.dungeonPet?'disabled style="opacity:.5"':''}>⚔️ 开始闯关</button>
-  `;
+  var html='<div class="section-title">⚔️ 僵尸闯关 - 第'+ST.stage+'关</div>'+
+    '<div style="font-size:12px;color:#888;margin-bottom:10px">选择出战宠物</div>'+
+    '<div class="pet-grid">';
+  for(var i=0;i<ps.length;i++){
+    var p=ps[i];
+    html+='<div class="pet-card r-'+p.rarity+(ST.dungeonPet===p.uid?' sel':'')+'" data-act="selDungeon" data-uid="'+p.uid+'">'+
+      '<span class="pet-img">'+p.img+'</span>'+
+      '<span class="pet-name">'+p.name+'</span>'+
+      '<span class="pet-info">⚔️'+hp(p)+'</span>'+
+      '<span class="pet-happy">😊'+(p.happy||100)+'%</span>'+
+    '</div>';
+  }
+  html+='</div><button class="start-btn" id="startBtn"'+(ST.dungeonPet?'':' disabled style="opacity:0.5"')+'>⚔️ 开始闯关</button>';
+  return html;
 }
 
-let _dungeonTimer=null,_zombieTimer=null,_dungeonPet=null,_dungeonPower=0,_waves=[],_waveIdx=0,_dungeonZombies=[],_skillCd=0;
-
-function renderDungeonBattle() {
-  const pet=_dungeonPet;
-  const petHp=state.dungeonPetHp||100;
-  const petMaxHp=state.dungeonPetMaxHp||100;
-  return `
-    <div class="battle-field" id="battleField">
-      <div class="pet-sprite" id="petSprite" style="left:${state.petX||40}px;top:${state.petY||100}px">
-        <div class="pet-circle">${pet.img}</div>
-        <div class="hp-bar"><div class="hp-fill pet-hp" style="width:${petHp/petMaxHp*100}%"></div></div>
-        <div class="hp-text">${petHp}/${petMaxHp}</div>
-      </div>
-      ${_dungeonZombies.map(z=>`
-        <div class="zombie-sprite ${z.dead?'dead':''} ${z.hit?'hit':''}" style="left:${z.x}px;top:${z.y}px">
-          <div class="zombie-circle">${z.name[0]}</div>
-          <div class="hp-bar"><div class="hp-fill" style="width:${z.hp/z.maxHp*100}%"></div></div>
-          <div class="hp-text">${z.hp}/${z.maxHp}</div>
-        </div>
-      `).join('')}
-    </div>
-    <div class="wave-bar">
-      <span>波次 ${_waveIdx+1}/${_waves.length}</span>
-      <span>第${state.stage}关</span>
-    </div>
-    <button class="skill-btn" id="skillBtn" data-action="useSkill" ${_skillCd>0?'disabled':''}>
-      ${_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+pet.skill}
-    </button>
-    <div class="battle-log" id="battleLog">${(state.dungeonLog||[]).slice(-6).map(l=>`<div class="log-line">${l}</div>`).join('')}</div>
-  `;
+function renderBattle(){
+  var petX=ST.petX||40;
+  var petY=ST.petY||100;
+  var petHp=ST.petHp||100;
+  var petMaxHp=ST.petMaxHp||100;
+  var logHtml='';
+  var log=_dungeonLog||[];
+  for(var i=Math.max(0,log.length-6);i<log.length;i++)logHtml+='<div class="log-line">'+log[i]+'</div>';
+  var html='<div class="battle-field" id="bfield">';
+  html+='<div class="pet-sprite'+(petX>60?' atk':'')+'" id="petSprite" style="left:'+petX+'px;top:'+petY+'px">'+
+    '<div class="pet-circle">'+(_pet?_pet.img:'?')+'</div>'+
+    '<div class="hp-bar"><div class="hp-fill green" id="petHpFill" style="width:'+Math.max(0,petHp/petMaxHp*100)+'%"></div></div>'+
+    '<div class="hp-text">'+Math.max(0,petHp)+'/'+petMaxHp+'</div></div>';
+  for(var i=0;i<_zombies.length;i++){
+    var z=_zombies[i];
+    html+='<div class="zombie-sprite'+(z.dead?' dead':'')+(z.hit?' hit':'')+'" style="left:'+z.x+'px;top:'+z.y+'px">'+
+      '<div class="zombie-circle">'+z.name[0]+'</div>'+
+      '<div class="hp-bar"><div class="hp-fill" style="width:'+Math.max(0,z.hp/z.maxHp*100)+'%"></div></div>'+
+      '<div class="hp-text">'+Math.max(0,z.hp)+'/'+z.maxHp+'</div></div>';
+  }
+  html+='</div>';
+  html+='<div class="wave-bar"><span>波次 '+(_waveIdx+1)+'/'+_waves.length+'</span><span>第'+ST.stage+'关</span></div>';
+  html+='<button class="skill-btn" id="skillBtn"'+(_skillCd>0?' disabled':'')+'>'+(_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+(_pet?_pet.skill:'技能'))+'</button>';
+  html+='<div class="battle-log">'+logHtml+'</div>';
+  return html;
 }
 
-function renderReward() {
-  const r=state.rewardData;
-  return `
-    <div class="reward-modal">
-      <div class="reward-box">
-        <div class="reward-title">🎉 闯关成功！</div>
-        <div class="reward-item">💰 +${r.pg} PG</div>
-        <div class="reward-equip" style="border-color:${r.equip.c}">
-          <span style="color:${r.equip.c};font-weight:bold">${r.equip.n}</span>
-          <span>${r.equip.name}</span>
-          <span>+${r.equip.b} 战力</span>
-        </div>
-        ${r.frag?'<div class="reward-item">💎 时装碎片×1</div>':''}
-        <button class="reward-btn" data-action="closeReward">收下奖励</button>
-      </div>
-    </div>
-  `;
+function renderReward(){
+  var r=_reward;
+  return '<div class="reward-modal"><div class="reward-box">'+
+    '<div class="reward-title">🎉 闯关成功！</div>'+
+    '<div class="reward-item">💰 +'+r.pg+' PG</div>'+
+    '<div class="reward-eq" style="border-color:'+r.equip.c+'">'+
+      '<span style="color:'+r.equip.c+';font-weight:bold">'+r.equip.n+'</span>'+
+      '<span>'+r.equip.name+'</span>'+
+      '<span>+'+r.equip.b+' 战力</span></div>'+
+    (r.frag?'<div class="reward-item">💎 时装碎片×1</div>':'')+
+    '<button class="reward-btn" id="closeReward">收下奖励</button>'+
+  '</div></div>';
 }
 
-function renderEquip() {
-  return `
-    <div class="sub-tabs">
-      <div class="sub-tab ${state.equipTab==='list'?'active':''}" data-action="equipTab" data-tab="list">背包</div>
-      <div class="sub-tab ${state.equipTab==='equipped'?'active':''}" data-action="equipTab" data-tab="equipped">已装备</div>
-    </div>
-    ${state.equipTab==='list'?(state.equipment.length?state.equipment.map(e=>`
-      <div class="equip-item">
-        <div class="equip-info">
-          <div class="equip-name" style="color:${e.c}">${e.name}</div>
-          <div class="equip-tier">${e.n} · ${SLOT_NAMES[e.slot]}</div>
-          <div class="equip-bonus">+${e.b} 战力</div>
-        </div>
-        <button class="equip-btn" data-uid="${e.uid}" data-action="equipItem">装备</button>
-      </div>
-    `).join(''):'<div class="empty">背包空空，闯关获取装备吧！</div>'):''}
-    ${state.equipTab==='equipped'?(state.pets.filter(p=>p.equip&&(p.equip.weapon||p.equip.armor||p.equip.accessory)).length?state.pets.filter(p=>p.equip&&(p.equip.weapon||p.equip.armor||p.equip.accessory)).map(p=>`
-      <div class="equipped-pet">
-        <div class="equipped-name">${p.name} (⚔️${calcPower(p)})</div>
-        ${SLOTS.map(s=>p.equip[s]?`<div class="equipped-slot" style="border-color:${p.equip[s].c}">
-          ${SLOT_NAMES[s]}: ${p.equip[s].name}(+${p.equip[s].b})
-          <span class="unequip" data-uid="${p.uid}" data-slot="${s}" data-action="unequip">[卸下]</span>
-        </div>`:'').join('')}
-      </div>
-    `).join(''):'<div class="empty">还没有装备</div>'):''}
-    <div class="legend-row">
-      <span style="color:#CCC">白装</span>
-      <span style="color:#3498DB">蓝装</span>
-      <span style="color:#9B59B6">紫装</span>
-      <span style="color:#E74C3C">红装</span>
-      <span style="color:#FF8C00">橙装</span>
-    </div>
-  `;
+// ===== EQUIP =====
+function renderEquip(){
+  var html='<div class="sub-tabs">'+
+    '<div class="sub-tab'+(ST.equipTab==='list'?' active':'')+'" data-act="equipTab" data-v="list">背包</div>'+
+    '<div class="sub-tab'+(ST.equipTab==='equipped'?' active':'')+'" data-act="equipTab" data-v="equipped">已装备</div>'+
+  '</div>';
+  if(ST.equipTab==='list'){
+    if(!ST.equip.length)return html+'<div class="empty">背包空空，闯关获取装备吧！</div>';
+    for(var i=0;i<ST.equip.length;i++){
+      var e=ST.equip[i];
+      html+='<div class="equip-item">'+
+        '<div class="eq-info">'+
+          '<div class="eq-name" style="color:'+e.c+'">'+e.name+'</div>'+
+          '<div class="eq-tier">'+e.n+' · '+SLOT_N[e.slot]+'</div>'+
+          '<div class="eq-bonus">+'+e.b+' 战力</div></div>'+
+        '<button class="eq-btn" data-act="equipItem" data-uid="'+e.uid+'">装备</button></div>';
+    }
+  }else{
+    var any=false;
+    for(var i=0;i<ST.pets.length;i++){
+      var pet=ST.pets[i];
+      if(pet.equip&&(pet.equip.weapon||pet.equip.armor||pet.equip.accessory)){
+        any=true;
+        html+='<div class="epet"><div class="epet-name">'+pet.name+' (⚔️'+hp(pet)+')</div>';
+        for(var j=0;j<SLOTS.length;j++){
+          var s=SLOTS[j];
+          if(pet.equip[s]){
+            html+='<div class="epet-slot" style="border-color:'+pet.equip[s].c+'">'+SLOT_N[s]+': '+pet.equip[s].name+'(+'+pet.equip[s].b+')'+
+              '<span class="epet-unequip" data-act="unequip" data-uid="'+pet.uid+'" data-slot="'+s+'">[卸下]</span></div>';
+          }
+        }
+        html+='</div>';
+      }
+    }
+    if(!any)html+='<div class="empty">还没有装备</div>';
+  }
+  html+='<div class="legend-row"><span style="color:#CCC">白装</span><span style="color:#3498DB">蓝装</span><span style="color:#9B59B6">紫装</span><span style="color:#E74C3C">红装</span><span style="color:#FF8C00">橙装</span></div>';
+  return html;
 }
 
-function renderFashion() {
-  return `
-    <div class="sub-tabs">
-      <div class="sub-tab ${state.fashionTab==='list'?'active':''}" data-action="fashionTab" data-tab="list">时装列表</div>
-      <div class="sub-tab ${state.fashionTab==='frag'?'active':''}" data-action="fashionTab" data-tab="frag">碎片仓库</div>
-    </div>
-    ${state.fashionTab==='list'?FASHIONS.map(f=>`
-      <div class="fashion-item">
-        <div class="fashion-icon">${f.g==='male'?'🧑‍🦱':'👩'}</div>
-        <div class="fashion-info">
-          <div class="fashion-name">${f.name}</div>
-          <div class="fashion-desc">${f.desc}</div>
-          <div class="fashion-bonus">+${f.pb} 战力</div>
-          <div class="fashion-frag">碎片：${state.fragments[f.id]||0} / ${f.frag}</div>
-        </div>
-        <button class="synth-btn ${(state.fragments[f.id]||0)>=f.frag?'ready':''}" data-id="${f.id}" data-action="synthFashion">
-          ${(state.fragments[f.id]||0)>=f.frag?'合成':'不足'}
-        </button>
-      </div>
-    `).join(''):Object.keys(state.fragments).length?Object.entries(state.fragments).filter(([,n])=>n>0).map(([id,c])=>{
-      const f=FASHIONS.find(x=>x.id===id);
-      return f?`<div class="frag-item"><span>${f.name}碎片</span><span style="color:#9B59B6">×${c} / ${f.frag}</span></div>`:'';
-    }).join(''):'<div class="empty">还没有碎片，闯关有20%概率掉落！</div>'}
-  `;
+// ===== FASHION =====
+function renderFashion(){
+  var html='<div class="sub-tabs">'+
+    '<div class="sub-tab'+(ST.fashionTab==='list'?' active':'')+'" data-act="fashionTab" data-v="list">时装列表</div>'+
+    '<div class="sub-tab'+(ST.fashionTab==='frag'?' active':'')+'" data-act="fashionTab" data-v="frag">碎片仓库</div>'+
+  '</div>';
+  if(ST.fashionTab==='list'){
+    for(var i=0;i<FASHIONS.length;i++){
+      var f=FASHIONS[i];
+      var fc=ST.frag[f.id]||0;
+      var ready=fc>=f.frag;
+      html+='<div class="fashion-item">'+
+        '<div class="fashion-icon">'+(f.g==='male'?'🧑‍🦱':'👩')+'</div>'+
+        '<div class="fashion-info">'+
+          '<div class="fashion-name">'+f.name+'</div>'+
+          '<div class="fashion-desc">'+f.desc+'</div>'+
+          '<div class="fashion-bonus">+'+f.pb+' 战力</div>'+
+          '<div class="fashion-frag">碎片：'+fc+' / '+f.frag+'</div></div>'+
+        '<button class="synth-btn'+(ready?' ready':'')+'" data-act="synthFashion" data-id="'+f.id+'" '+(ready?'':' disabled')+'>'+(ready?'合成':'不足')+'</button></div>';
+    }
+    html+='<div style="font-size:12px;color:#666;padding:10px;line-height:1.6">💡 闯关有20%概率掉落时装碎片，收集足够碎片可合成时装，让宠物变成人形修仙者模样！</div>';
+  }else{
+    var has=false;
+    for(var id in ST.frag){
+      if(ST.frag[id]>0){
+        has=true;
+        var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===id){f=FASHIONS[i];break;}
+        if(f)html+='<div class="frag-item"><span>'+f.name+'碎片</span><span style="color:#9B59B6">×'+ST.frag[id]+' / '+f.frag+'</span></div>';
+      }
+    }
+    if(!has)html+='<div class="empty">还没有碎片，闯关有20%概率掉落！</div>';
+  }
+  return html;
 }
 
-function renderShop() {
-  const cats=[
+// ===== SHOP =====
+function renderShop(){
+  var cats=[
     {t:'egg',title:'🥚 扭蛋孵化',ids:['egg1','egg2','egg3']},
     {t:'food',title:'🍖 宠物食物',ids:['food1','food2','food3','food4']},
     {t:'clean',title:'🧹 清洁用品',ids:['clean1','clean2','clean3','clean4']},
     {t:'toy',title:'🎾 宠物玩具',ids:['toy1','toy2','toy3']},
     {t:'all',title:'🎁 全体道具',ids:['all1','all2','all3']}
   ];
-  return cats.map(cat=>`
-    <div class="shop-category">
-      <div class="shop-title">${cat.title}</div>
-      ${SHOP.filter(s=>cat.ids.includes(s.id)).map(s=>`
-        <div class="shop-item" data-id="${s.id}" data-action="buy">
-          <div class="shop-name">${s.name}</div>
-          <div class="shop-desc">${s.desc}</div>
-          <div class="shop-price">💰 ${s.price} PG</div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-function renderTasks() {
-  return state.tasks.map(t=>`
-    <div class="task-item">
-      <div>
-        <div class="task-name">${t.n}</div>
-        <div class="task-desc">${t.d}</div>
-        <div class="task-reward">奖励：${t.r} PG</div>
-      </div>
-      <button class="task-btn ${t.c?'done':''}" data-id="${t.id}" data-action="claimTask" ${t.c?'disabled':''}>
-        ${t.c?'已领':'领取'}
-      </button>
-    </div>
-  `).join('');
-}
-
-function renderCare() {
-  const sel=state.selectedCare||state.pets[0];
-  if(!sel)return'<div class="empty">还没有宠物</div>';
-  return `
-    <div class="care-panel">
-      <div class="care-header">
-        <div class="care-img">${sel.img}</div>
-        <div>
-          <div class="care-name">${sel.name}</div>
-          <div class="care-power">⚔️总战力 ${calcPower(sel)} | Lv.${sel.level||1}</div>
-        </div>
-      </div>
-      <div class="status-row"><span>🍗 饱食</span><div class="status-bar"><div class="status-fill hunger-fill" style="width:${sel.hunger||100}%"></div></div><span>${sel.hunger||100}%</span></div>
-      <div class="status-row"><span>🧹 清洁</span><div class="status-bar"><div class="status-fill clean-fill" style="width:${sel.clean||100}%"></div></div><span>${sel.clean||100}%</span></div>
-      <div class="status-row"><span>😊 心情</span><div class="status-bar"><div class="status-fill happy-fill" style="width:${sel.happy||100}%"></div></div><span>${sel.happy||100}%</span></div>
-      <div class="care-btns">
-        <button class="care-btn" data-action="feedCare">🍗 喂食</button>
-        <button class="care-btn" data-action="cleanCare">🧹 清洁</button>
-        <button class="care-btn" data-action="playCare">🎾 玩耍</button>
-      </div>
-    </div>
-    <div class="section-title" style="margin-top:12px">选择宠物</div>
-    <div class="care-scroll">
-      ${state.pets.map(p=>`
-        <div class="care-pet ${sel&&sel.uid===p.uid?'sel':''}" data-uid="${p.uid}" data-action="selCare">
-          <div style="font-size:28px">${p.img}</div>
-          <div>${p.name}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-// ===== EVENTS =====
-function bindEvents() {
-  document.querySelectorAll('[data-action]').forEach(el=>{
-    el.addEventListener('click',e=>{
-      const action=el.dataset.action;
-      const uid=el.dataset.uid;
-      const slot=el.dataset.slot;
-      const fid=el.dataset.id;
-      const filter=el.dataset.filter;
-      const tab=el.dataset.tab;
-
-      switch(action){
-        case'detail':showPetDetail(uid);break;
-        case'selDungeon':state.dungeonPet=uid;render();break;
-        case'startDungeon':startDungeon();break;
-        case'useSkill':useSkill();break;
-        case'closeReward':closeReward();break;
-        case'equipTab':state.equipTab=tab;render();break;
-        case'fashionTab':state.fashionTab=tab;render();break;
-        case'equipItem':doEquipItem(uid);break;
-        case'unequip':doUnequip(uid,slot);break;
-        case'synthFashion':doSynthFashion(fid);break;
-        case'buy':doBuy(el.dataset.id);break;
-        case'claimTask':doClaimTask(parseInt(el.dataset.id));break;
-        case'feedCare':doCareAction('hunger',30);break;
-        case'cleanCare':doCareAction('clean',30);break;
-        case'playCare':doCareAction('happy',30);break;
-        case'selCare':state.selectedCare=state.pets.find(p=>p.uid===uid);render();break;
+  var html='';
+  for(var c=0;c<cats.length;c++){
+    var cat=cats[c];
+    html+='<div class="shop-cat"><div class="shop-title">'+cat.title+'</div>';
+    for(var i=0;i<SHOP.length;i++){
+      var s=SHOP[i];
+      if(cat.ids.indexOf(s.id)>-1){
+        html+='<div class="shop-item" data-act="buy" data-id="'+s.id+'">'+
+          '<div class="shop-name">'+s.name+'</div>'+
+          '<div class="shop-desc">'+s.desc+'</div>'+
+          '<div class="shop-price">💰 '+s.price+' PG</div></div>';
       }
-    });
-  });
+    }
+    html+='</div>';
+  }
+  return html;
+}
+
+// ===== TASKS =====
+function renderTasks(){
+  var html='';
+  for(var i=0;i<ST.tasks.length;i++){
+    var t=ST.tasks[i];
+    html+='<div class="task-item">'+
+      '<div><div class="task-name">'+t.n+'</div><div class="task-desc">'+t.d+'</div><div class="task-reward">奖励：'+t.r+' PG</div></div>'+
+      '<button class="task-btn'+(t.c?' done':'')+'" data-act="claimTask" data-id="'+t.id+'" data-r="'+t.r+'"'+(t.c?' disabled':'')+'>'+(t.c?'已领':'领取')+'</button></div>';
+  }
+  return html;
+}
+
+// ===== CARE =====
+function renderCare(){
+  var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
+  if(!sel)return'<div class="empty">还没有宠物</div>';
+  var html='<div class="care-panel">'+
+    '<div class="care-header">'+
+      '<div class="care-img">'+sel.img+'</div>'+
+      '<div><div class="care-name">'+sel.name+'</div><div class="care-power">⚔️'+hp(sel)+' | Lv.'+(sel.level||1)+'</div></div></div>'+
+    '<div class="status-row"><span>🍗 饱食</span><div class="sbar"><div class="sfill fill-hunger" style="width:'+(sel.hunger||100)+'%"></div></div><span>'+(sel.hunger||100)+'%</span></div>'+
+    '<div class="status-row"><span>🧹 清洁</span><div class="sbar"><div class="sfill fill-clean" style="width:'+(sel.clean||100)+'%"></div></div><span>'+(sel.clean||100)+'%</span></div>'+
+    '<div class="status-row"><span>😊 心情</span><div class="sbar"><div class="sfill fill-happy" style="width:'+(sel.happy||100)+'%"></div></div><span>'+(sel.happy||100)+'%</span></div>'+
+    '<div class="care-btns">'+
+      '<button class="care-btn" data-act="careFeed">🍗 喂食</button>'+
+      '<button class="care-btn" data-act="careClean">🧹 清洁</button>'+
+      '<button class="care-btn" data-act="carePlay">🎾 玩耍</button></div></div>'+
+    '<div class="section-title" style="margin-top:12px">选择宠物</div>'+
+    '<div class="care-scroll">';
+  for(var i=0;i<ST.pets.length;i++){
+    var p=ST.pets[i];
+    html+='<div class="care-pet'+(sel&&sel.uid===p.uid?' sel':'')+'" data-act="selCare" data-uid="'+p.uid+'">'+
+      '<div style="font-size:28px">'+p.img+'</div><div>'+p.name+'</div></div>';
+  }
+  return html+'</div>';
+}
+
+// ===== EVENT ATTACHMENT (event delegation on #app) =====
+function attachEvents(){
+  var app=document.getElementById('app');
+  if(!app)return;
+
+  // One-time login buttons
+  var loginBtn=document.getElementById('loginBtn');
+  if(loginBtn){
+    loginBtn.onclick=function(){
+      ST.loggedIn=true;
+      ST.userName='训练师';
+      save();
+      render();
+    };
+  }
+  var guestBtn=document.getElementById('guestBtn');
+  if(guestBtn){
+    guestBtn.onclick=function(){
+      ST.loggedIn=true;
+      ST.userName='游客';
+      save();
+      render();
+    };
+  }
+
+  // Tab clicks
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++){
+    tabs[i].onclick=(function(tab){
+      return function(){
+        ST.tab=tab;
+        if(ST.dungeonActive)return; // Don't switch tabs during battle
+        render();
+      };
+    })(tabs[i].dataset.tab);
+  }
 
   // Hatch button
-  const hatchBtn=document.getElementById('hatchBtn');
+  var hatchBtn=document.getElementById('hatchBtn');
   if(hatchBtn){
-    hatchBtn.addEventListener('click',()=>{
-      if(state.pg<100){alert('PG币不足！');return;}
-      state.pg-=100;
-      const r=randRarity();
-      const pet=hatchPet(r);
-      state.pets.push(pet);
+    hatchBtn.onclick=function(){
+      if(ST.pg<100){showAlert('PG币不足！');return;}
+      ST.pg-=100;
+      var r=rr();
+      var pet=mkPet(r);
+      pet.rarity=r;
+      ST.pets.push(pet);
       save();
+      updateHeader();
       hatchBtn.classList.add('shaking');
-      setTimeout(()=>{
+      setTimeout(function(){
         hatchBtn.classList.remove('shaking');
-        showHatchResult(pet);
-      },500);
-    });
+        _resultPet=pet;
+        showResult(pet);
+      },400);
+    };
   }
-}
 
-function showHatchResult(pet) {
-  const c=document.getElementById('content');
-  c.innerHTML=`
-    <div class="result-modal">
-      <div class="result-box">
-        <div class="result-name">🎉 获得 ${pet.name}！</div>
-        <div class="result-rarity" style="color:${RARITY[pet.rarity].color}">${RARITY[pet.rarity].text}</div>
-        <div class="result-skill">⚔️ 技能：${pet.skill}</div>
-        <div class="result-skill">战力：${pet.power}</div>
-        <button class="result-close" onclick="render()">收下</button>
-      </div>
-    </div>
-  `;
-}
-
-function showPetDetail(uid) {
-  const pet=state.pets.find(p=>p.uid===uid);
-  if(!pet)return;
-  const tp=calcPower(pet);
-  let equipInfo='';
-  SLOTS.forEach(s=>{
-    if(pet.equip&&pet.equip[s])equipInfo+=`\n${SLOT_NAMES[s]}：${pet.equip[s].name}(+${pet.equip[s].b})`;
-  });
-  if(pet.fashion){
-    const f=FASHIONS.find(x=>x.id===pet.fashion);
-    if(f)equipInfo+=`\n时装：${f.name}(+${f.pb})`;
+  // Start dungeon
+  var startBtn=document.getElementById('startBtn');
+  if(startBtn){
+    startBtn.onclick=function(){
+      if(!ST.dungeonPet){showAlert('请先选择出战宠物');return;}
+      var pet;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===ST.dungeonPet){pet=ST.pets[i];break;}
+      if(!pet){showAlert('宠物不存在');return;}
+      if((pet.hunger||100)<20){showAlert('宠物太饿了，先喂食！');return;}
+      _pet=pet;
+      _power=hp(pet);
+      _waves=getWaves(ST.stage);
+      _waveIdx=0;
+      _zombies=JSON.parse(JSON.stringify(_waves[0]));
+      _skillCd=0;
+      _dungeonLog=['第'+ST.stage+'关 - 波次1/'+_waves.length];
+      ST.dungeonActive=true;
+      ST.petHp=100+Math.floor(_power*0.5);
+      ST.petMaxHp=100+Math.floor(_power*0.5);
+      ST.petX=40;
+      ST.petY=100;
+      save();
+      render();
+      _atkTimer=setInterval(dungeonAttack,1500);
+      _zTimer=setInterval(zombieMove,2000);
+    };
   }
-  alert(`${pet.name}\n${RARITY[pet.rarity].text} | ${pet.profession}\n基础战力：${pet.power}\n总战力：${tp}${equipInfo}\n等级：Lv.${pet.level||1}`);
+
+  // Skill button
+  var skillBtn=document.getElementById('skillBtn');
+  if(skillBtn){
+    skillBtn.onclick=function(){
+      if(_skillCd>0||!ST.dungeonActive)return;
+      var pet=_pet;
+      var dmg=Math.floor(_power*pet.skillDmg*(0.8+Math.random()*0.4));
+      _zombies=_zombies.map(function(z){
+        if(z.dead)return z;
+        var nh=z.hp-dmg;
+        return{hp:nh<=0?0:nh,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:nh<=0?false:true,dead:nh<=0};
+      });
+      _dungeonLog.push(pet.name+' 释放 '+pet.skill+'！全屏 -'+dmg+'！');
+      ST.petX=120;
+      _skillCd=5;
+      render();
+      var cd=setInterval(function(){
+        _skillCd--;
+        var btn=document.getElementById('skillBtn');
+        if(btn)btn.textContent=_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+pet.skill;
+        if(_skillCd<=0&&btn){btn.disabled=false;btn.textContent='🔥 '+pet.skill;}
+        if(_skillCd<=0)clearInterval(cd);
+      },1000);
+      setTimeout(function(){ST.petX=40;render();},300);
+      setTimeout(function(){
+        _zombies=_zombies.map(function(z){return{hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:false,dead:z.dead};});
+        render();
+      },350);
+      setTimeout(checkWave,600);
+    };
+  }
+
+  // Close reward
+  var closeReward=document.getElementById('closeReward');
+  if(closeReward){
+    closeReward.onclick=function(){
+      _reward=null;
+      render();
+    };
+  }
+
+  // All other actions via delegation
+  app.onclick=function(e){
+    var el=e.target;
+    while(el&&el!==app&&!el.dataset.act)el=el.parentElement;
+    if(!el||!el.dataset.act)return;
+    var act=el.dataset.act;
+    var uid=el.dataset.uid;
+    var slot=el.dataset.slot;
+    var fid=el.dataset.id;
+    var vid=el.dataset.v;
+    var rid=el.dataset.id;
+    var rr=el.dataset.r;
+
+    switch(act){
+      case'filter':ST.filter=vid;render();break;
+      case'petDetail':
+        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){p=ST.pets[i];break;}
+        if(p)showAlert(p.name+'\n'+RARITY[p.rarity].t+' | '+p.profession+'\n战力：'+hp(p)+'\n技能：'+p.skill+'\nLv.'+(p.level||1));
+        break;
+      case'selDungeon':ST.dungeonPet=uid;render();break;
+      case'equipTab':ST.equipTab=vid;render();break;
+      case'equipItem':
+        var eq;for(var i=0;i<ST.equip.length;i++)if(ST.equip[i].uid===uid){eq=ST.equip[i];break;}
+        if(!eq)break;
+        if(!ST.pets.length){showAlert('没有宠物');break;}
+        showSelectPet('选择装备到哪个宠物',function(petIdx){
+          ST.equip=ST.equip.filter(function(e){return e.uid!==uid;});
+          ST.pets[petIdx].equip=ST.pets[petIdx].equip||{weapon:null,armor:null,accessory:null};
+          ST.pets[petIdx].equip[eq.slot]=eq;
+          save();
+          render();
+          showAlert('装备成功！');
+        });
+        break;
+      case'unequip':
+        var pet;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){pet=ST.pets[i];break;}
+        if(!pet||!pet.equip||!pet.equip[slot])break;
+        ST.equip.push(pet.equip[slot]);
+        pet.equip[slot]=null;
+        save();
+        render();
+        break;
+      case'fashionTab':ST.fashionTab=vid;render();break;
+      case'synthFashion':
+        var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===fid){f=FASHIONS[i];break;}
+        if(!f)break;
+        if((ST.frag[fid]||0)<f.frag){showAlert('碎片不足');break;}
+        if(!ST.pets.length){showAlert('没有宠物');break;}
+        showSelectPet('选择穿上时装的宠物',function(petIdx){
+          ST.frag[fid]=(ST.frag[fid]||0)-f.frag;
+          ST.pets[petIdx].fashion=fid;
+          if(ST.fash.indexOf(fid)===-1)ST.fash.push(fid);
+          save();
+          render();
+          showAlert('时装合成成功！');
+        });
+        break;
+      case'buy':
+        var item;for(var i=0;i<SHOP.length;i++)if(SHOP[i].id===fid){item=SHOP[i];break;}
+        if(!item)break;
+        if(ST.pg<item.price){showAlert('PG币不足！');break;}
+        ST.pg-=item.price;
+        save();
+        if(item.type==='egg'){
+          var r=item.rarity||rr();
+          var pet=mkPet(r);pet.rarity=r;
+          ST.pets.push(pet);
+          save();
+          updateHeader();
+          _resultPet=pet;
+          showResult(pet);
+        }else if(item.type==='food'||item.type==='clean'||item.type==='toy'){
+          if(!ST.pets.length){ST.pg+=item.price;save();showAlert('没有宠物');render();break;}
+          showSelectPet('选择宠物',function(petIdx){
+            var p=ST.pets[petIdx];
+            if(item.type==='food'){
+              p.hunger=Math.min(100,(p.hunger||100)+(item.h||0));
+              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
+            }else if(item.type==='clean'){
+              p.clean=Math.min(100,(p.clean||100)+(item.c||0));
+              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
+            }else if(item.type==='toy'){
+              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
+            }
+            save();
+            render();
+            showAlert('使用成功！');
+          });
+        }else if(item.type==='all'){
+          ST.pets=ST.pets.map(function(p){
+            var hp2=p.hunger||100,cl=p.clean||100,ha=p.happy||100;
+            if(item.ah)hp2=Math.min(100,hp2+item.ah);
+            if(item.ac)cl=Math.min(100,cl+item.ac);
+            if(item.ahp)ha=Math.min(100,ha+item.ahp);
+            return{hunger:hp2,clean:cl,happy:ha,power:p.power,name:p.name,uid:p.uid,img:p.img,rarity:p.rarity,profession:p.profession,skill:p.skill,skillDmg:p.skillDmg,level:p.level,equip:p.equip,fashion:p.fashion,basePower:p.basePower,id:p.id};
+          });
+          save();
+          render();
+          showAlert('使用成功！');
+        }
+        break;
+      case'claimTask':
+        var tid=parseInt(rid);
+        var t;for(var i=0;i<ST.tasks.length;i++)if(ST.tasks[i].id===tid){t=ST.tasks[i];break;}
+        if(!t||t.c)break;
+        t.c=true;
+        ST.pg+=parseInt(rr)||t.r;
+        save();
+        updateHeader();
+        render();
+        showAlert('领取成功！+'+t.r+' PG');
+        break;
+      case'careFeed':
+        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
+        if(!sel)break;
+        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
+        if(!p)break;
+        p.hunger=Math.min(100,(p.hunger||100)+30);
+        ST.selectedCare=p;
+        save();
+        render();
+        break;
+      case'careClean':
+        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
+        if(!sel)break;
+        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
+        if(!p)break;
+        p.clean=Math.min(100,(p.clean||100)+30);
+        ST.selectedCare=p;
+        save();
+        render();
+        break;
+      case'carePlay':
+        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
+        if(!sel)break;
+        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
+        if(!p)break;
+        p.happy=Math.min(100,(p.happy||100)+30);
+        ST.selectedCare=p;
+        save();
+        render();
+        break;
+      case'selCare':
+        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){p=ST.pets[i];break;}
+        if(p){ST.selectedCare=p;render();}
+        break;
+    }
+  };
 }
 
-// ===== DUNGEON =====
-function startDungeon() {
-  const pet=state.pets.find(p=>p.uid===state.dungeonPet);
-  if(!pet){alert('请选择宠物');return;}
-  if((pet.hunger||100)<20){alert('宠物太饿了，先喂食！');return;}
-  _dungeonPet=pet;
-  _dungeonPower=calcPower(pet);
-  _waves=getWaves(state.stage);
-  _waveIdx=0;
-  _dungeonZombies=JSON.parse(JSON.stringify(_waves[0]));
-  state.dungeonActive=true;
-  state.dungeonPetHp=100+Math.floor(_dungeonPower*0.5);
-  state.dungeonPetMaxHp=100+Math.floor(_dungeonPower*0.5);
-  state.dungeonLog=['第'+state.stage+'关 - 波次1/'+_waves.length];
-  state.petX=40;
-  state.petY=100;
-  _skillCd=0;
-  save();
-  render();
-  _dungeonTimer=setInterval(dungeonAttack,1500);
-  _zombieTimer=setInterval(zombieMove,2000);
+function showResult(pet){
+  var app=document.getElementById('app');
+  var modal=document.createElement('div');
+  modal.className='result-modal';
+  modal.innerHTML='<div class="result-box">'+
+    '<div class="result-name">🎉 获得 '+pet.name+'！</div>'+
+    '<div class="result-rarity" style="color:'+RARITY[pet.rarity].c+'">'+RARITY[pet.rarity].t+'</div>'+
+    '<div class="result-skill">⚔️ 技能：'+pet.skill+'</div>'+
+    '<div class="result-skill">战力：'+pet.power+'</div>'+
+    '<button class="result-btn" id="closeResult">收下</button></div>';
+  document.body.appendChild(modal);
+  document.getElementById('closeResult').onclick=function(){
+    document.body.removeChild(modal);
+  };
 }
 
-function dungeonAttack() {
-  if(!state.dungeonActive)return;
-  const alive=_dungeonZombies.filter(z=>!z.dead);
+function showSelectPet(msg,cb){
+  var modal=document.createElement('div');
+  modal.className='select-modal';
+  var html='<div class="select-box"><h3>'+msg+'</h3>';
+  for(var i=0;i<ST.pets.length;i++){
+    html+='<div class="select-item" data-idx="'+i+'">'+ST.pets[i].img+' '+ST.pets[i].name+' (Lv.'+(ST.pets[i].level||1)+')</div>';
+  }
+  html+='<div class="select-cancel" id="selCancel">取消</div></div>';
+  modal.innerHTML=html;
+  document.body.appendChild(modal);
+  var items=modal.querySelectorAll('.select-item');
+  for(var i=0;i<items.length;i++){
+    items[i].onclick=function(){
+      var idx=parseInt(this.dataset.idx);
+      document.body.removeChild(modal);
+      cb(idx);
+    };
+  }
+  document.getElementById('selCancel').onclick=function(){
+    document.body.removeChild(modal);
+    render(); // re-render in case state changed
+  };
+}
+
+function showAlert(msg){
+  var modal=document.createElement('div');
+  modal.className='select-modal';
+  modal.innerHTML='<div class="select-box"><h3 style="word-break:break-all">'+msg.replace(/\n/g,'<br>')+'</h3><div class="select-item" id="alertOk" style="text-align:center;background:#667eea;color:#fff">确定</div></div>';
+  document.body.appendChild(modal);
+  document.getElementById('alertOk').onclick=function(){
+    document.body.removeChild(modal);
+  };
+}
+
+function updateHeader(){
+  var pgEl=document.getElementById('hdr_pg');
+  if(pgEl)pgEl.textContent=ST.pg;
+}
+
+// ===== DUNGEON LOGIC =====
+function dungeonAttack(){
+  if(!ST.dungeonActive)return;
+  var alive=_zombies.filter(function(z){return!z.dead;});
   if(!alive.length)return;
-  const target=alive[Math.floor(Math.random()*alive.length)];
-  const dmg=Math.floor(_dungeonPower*(0.6+Math.random()*0.3));
+  var target=alive[Math.floor(Math.random()*alive.length)];
+  var dmg=Math.floor(_power*(0.6+Math.random()*0.3));
   target.hp-=dmg;
   target.hit=true;
-  const log=[...(state.dungeonLog||[]),_dungeonPet.name+' 攻击 '+target.name+' -'+dmg];
-  if(target.hp<=0){target.hp=0;target.dead=true;log.push(target.name+' 被击败！');}
-  state.petX=80;
-  state.dungeonLog=log;
+  _dungeonLog.push((_pet?_pet.name:'宠')+' 攻击 '+target.name+' -'+dmg);
+  if(target.hp<=0){target.hp=0;target.dead=true;_dungeonLog.push(target.name+' 被击败！');}
+  ST.petX=80;
   render();
-  setTimeout(()=>{state.petX=40;render();},250);
-  setTimeout(()=>{_dungeonZombies=_dungeonZombies.map(z=>({...z,hit:false}));render();},300);
+  setTimeout(function(){ST.petX=40;render();},250);
+  setTimeout(function(){
+    _zombies=_zombies.map(function(z){return{hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:false,dead:z.dead};});
+    render();
+  },300);
   setTimeout(checkWave,500);
 }
 
-function useSkill() {
-  if(_skillCd>0||!state.dungeonActive)return;
-  const pet=_dungeonPet;
-  const dmg=Math.floor(_dungeonPower*pet.skillDmg*(0.8+Math.random()*0.4));
-  _dungeonZombies=_dungeonZombies.map(z=>{
-    if(z.dead)return z;
-    const nh=z.hp-dmg;
-    return {...z,hp:nh<=0?0:nh,hit:nh<=0?false:true,dead:nh<=0};
-  });
-  const log=[...(state.dungeonLog||[]),pet.name+' 释放 '+pet.skill+'！全屏 -'+dmg+'！'];
-  state.petX=120;
-  _skillCd=5;
-  state.dungeonLog=log;
-  render();
-  const cd=setInterval(()=>{
-    _skillCd--;
-    const btn=document.getElementById('skillBtn');
-    if(btn)btn.textContent=_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+pet.skill;
-    if(_skillCd<=0)clearInterval(cd);
-  },1000);
-  setTimeout(()=>{state.petX=40;render();},300);
-  setTimeout(()=>{_dungeonZombies=_dungeonZombies.map(z=>({...z,hit:false}));render();},350);
-  setTimeout(checkWave,600);
-}
-
-function zombieMove() {
-  if(!state.dungeonActive)return;
-  let petHp=state.dungeonPetHp;
-  const log=[...(state.dungeonLog||'')];
-  _dungeonZombies=_dungeonZombies.map(z=>{
-    if(z.dead)return z;
-    const nx=z.x-(z.speed||1)*12;
+function zombieMove(){
+  if(!ST.dungeonActive)return;
+  var petHp=ST.petHp;
+  var newZ=[];
+  for(var i=0;i<_zombies.length;i++){
+    var z=_zombies[i];
+    if(z.dead){newZ.push(z);continue;}
+    var nx=z.x-z.spd*12;
     if(nx<=60){
       petHp-=z.atk;
-      log.push(z.name+' 攻击！-'+z.atk);
-      return {...z,x:220+Math.random()*30};
+      _dungeonLog.push(z.name+' 攻击！-'+z.atk);
+      newZ.push({hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:220+Math.random()*30,y:z.y,hit:z.hit,dead:z.dead});
+    }else{
+      newZ.push({hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:nx,y:z.y,hit:false,dead:z.dead});
     }
-    return {...z,x:nx};
-  });
+  }
+  _zombies=newZ;
   if(petHp<=0){
     petHp=0;
-    log.push('宠物倒下了...');
-    state.dungeonLog=log;
-    state.dungeonPetHp=0;
-    clearInterval(_dungeonTimer);
-    clearInterval(_zombieTimer);
-    state.dungeonActive=false;
+    _dungeonLog.push('宠物倒下了...');
+    ST.petHp=0;
+    clearInterval(_atkTimer);
+    clearInterval(_zTimer);
+    ST.dungeonActive=false;
+    save();
     render();
-    setTimeout(()=>alert('闯关失败，下次再来！'),300);
+    showGameOver('闯关失败，下次再来！');
     return;
   }
-  state.dungeonZombies=_dungeonZombies;
-  state.dungeonPetHp=petHp;
-  state.dungeonLog=log;
+  ST.petHp=petHp;
   render();
 }
 
-function checkWave() {
-  if(!state.dungeonActive)return;
-  if(_dungeonZombies.every(z=>z.dead)){
+function checkWave(){
+  if(!ST.dungeonActive)return;
+  if(_zombies.every(function(z){return z.dead;})){
     _waveIdx++;
     if(_waveIdx<_waves.length){
-      _dungeonZombies=JSON.parse(JSON.stringify(_waves[_waveIdx]));
-      state.dungeonLog=[...(state.dungeonLog||[]),'波次'+(_waveIdx+1)+'/'+_waves.length+'！'];
+      _zombies=JSON.parse(JSON.stringify(_waves[_waveIdx]));
+      _dungeonLog.push('波次'+(1+_waveIdx)+'/'+_waves.length+'！');
       render();
     }else{
-      clearInterval(_dungeonTimer);
-      clearInterval(_zombieTimer);
-      state.dungeonActive=false;
-      dungeonVictory();
+      clearInterval(_atkTimer);
+      clearInterval(_zTimer);
+      ST.dungeonActive=false;
+      victory();
     }
   }
 }
 
-function dungeonVictory() {
-  const stage=state.stage;
-  const pgR=30+stage*20;
-  const equip=dropEquip(stage);
-  state.equipment.push(equip);
-  let frag=null;
+function victory(){
+  var pgR=30+ST.stage*20;
+  var eq=dropEquip(ST.stage);
+  ST.equip.push(eq);
+  var frag=null;
   if(Math.random()<0.2){
-    const fi=Math.floor(Math.random()*FASHIONS.length);
+    var fi=Math.floor(Math.random()*FASHIONS.length);
     frag=FASHIONS[fi].id;
-    state.fragments[frag]=(state.fragments[frag]||0)+1;
+    ST.frag[frag]=(ST.frag[frag]||0)+1;
   }
-  state.rewardData={pg:pgR,equip,frag};
-  state.pg+=pgR;
-  state.stage=stage+1;
+  _reward={pg:pgR,equip:eq,frag:frag};
+  ST.pg+=pgR;
+  ST.stage++;
   // Consume hunger
-  state.pets=state.pets.map(p=>{
-    if(p.uid===_dungeonPet.uid)return{...p,hunger:Math.max(0,(p.hunger||100)-15)};
+  ST.pets=ST.pets.map(function(p){
+    if(p.uid===_pet.uid)return{hunger:Math.max(0,(p.hunger||100)-15),clean:p.clean,happy:p.happy,power:p.power,name:p.name,uid:p.uid,img:p.img,rarity:p.rarity,profession:p.profession,skill:p.skill,skillDmg:p.skillDmg,level:p.level,equip:p.equip,fashion:p.fashion,basePower:p.basePower,id:p.id};
     return p;
   });
   save();
   render();
 }
 
-function closeReward() {
-  state.rewardData=null;
-  render();
+function showGameOver(msg){
+  var modal=document.createElement('div');
+  modal.className='game-over-modal';
+  modal.innerHTML='<div class="game-over-box">'+
+    '<div class="game-over-title">😢 '+msg+'</div>'+
+    '<button class="game-over-btn" id="gameOverOk">确定</button></div>';
+  document.body.appendChild(modal);
+  document.getElementById('gameOverOk').onclick=function(){document.body.removeChild(modal);};
 }
 
-// ===== EQUIPMENT =====
-function doEquipItem(eqUid) {
-  const eq=state.equipment.find(e=>e.uid===eqUid);
-  if(!eq)return;
-  if(!state.pets.length){alert('没有宠物');return;}
-  const names=state.pets.map(p=>p.name);
-  const idx=prompt('选择宠物(编号):\n'+names.map((n,i)=>i+': '+n).join('\n'));
-  if(idx===null)return;
-  const i=parseInt(idx);
-  if(i<0||i>=state.pets.length){alert('无效选择');return;}
-  state.equipment=state.equipment.filter(e=>e.uid!==eqUid);
-  state.pets[i].equip=state.pets[i].equip||{weapon:null,armor:null,accessory:null};
-  state.pets[i].equip[eq.slot]=eq;
-  save();
-  render();
-  alert('装备成功！');
-}
-
-function doUnequip(pUid,slot) {
-  const pet=state.pets.find(p=>p.uid===pUid);
-  if(!pet||!pet.equip||!pet.equip[slot])return;
-  const old=pet.equip[slot];
-  state.equipment.push(old);
-  pet.equip[slot]=null;
-  save();
-  render();
-}
-
-// ===== FASHION =====
-function doSynthFashion(fid) {
-  const f=FASHIONS.find(x=>x.id===fid);
-  if(!f)return;
-  if((state.fragments[fid]||0)<f.frag){alert('碎片不足');return;}
-  if(!state.pets.length){alert('没有宠物');return;}
-  const names=state.pets.map(p=>p.name);
-  const idx=prompt('选择宠物(编号):\n'+names.map((n,i)=>i+': '+n).join('\n'));
-  if(idx===null)return;
-  const i=parseInt(idx);
-  if(i<0||i>=state.pets.length){alert('无效选择');return;}
-  state.fragments[fid]-=f.frag;
-  state.pets[i].fashion=fid;
-  if(!state.fashions.includes(fid))state.fashions.push(fid);
-  save();
-  render();
-  alert('时装合成成功！');
-}
-
-// ===== SHOP =====
-function doBuy(id) {
-  const item=SHOP.find(s=>s.id===id);
-  if(!item){return;}
-  if(state.pg<item.price){alert('PG币不足！');return;}
-  state.pg-=item.price;
-  if(item.type==='egg'){
-    const r=item.rarity||randRarity();
-    const pet=hatchPet(r);
-    pet.rarity=r;
-    state.pets.push(pet);
-    save();
-    render();
-    showHatchResult(pet);
-  }else if(item.type==='food'||item.type==='clean'||item.type==='toy'){
-    if(!state.pets.length){state.pg+=item.price;alert('没有宠物');render();return;}
-    const names=state.pets.map((p,i)=>i+': '+p.name);
-    const idx=prompt('选择宠物(编号):\n'+names.join('\n'));
-    if(idx===null){state.pg+=item.price;render();return;}
-    const i=parseInt(idx);
-    if(i<0||i>=state.pets.length){state.pg+=item.price;render();return;}
-    if(item.type==='food'){
-      state.pets[i].hunger=Math.min(100,(state.pets[i].hunger||100)+(item.h||0));
-      state.pets[i].happy=Math.min(100,(state.pets[i].happy||100)+(item.hp||0));
-    }else if(item.type==='clean'){
-      state.pets[i].clean=Math.min(100,(state.pets[i].clean||100)+(item.c||0));
-      state.pets[i].happy=Math.min(100,(state.pets[i].happy||100)+(item.hp||0));
-    }else if(item.type==='toy'){
-      state.pets[i].happy=Math.min(100,(state.pets[i].happy||100)+(item.hp||0));
-    }
-    save();
-    render();
-    alert('使用成功！');
-  }else if(item.type==='all'){
-    state.pets=state.pets.map(p=>{
-      let hp=p.hunger||100,cl=p.clean||100,ha=p.happy||100;
-      if(item.ah)hp=Math.min(100,hp+item.ah);
-      if(item.ac)cl=Math.min(100,cl+item.ac);
-      if(item.ahp)ha=Math.min(100,ha+item.ahp);
-      return{...p,hunger:hp,clean:cl,happy:ha};
-    });
-    save();
-    render();
-    alert('使用成功！');
-  }
-}
-
-// ===== TASKS =====
-function doClaimTask(id) {
-  const t=state.tasks.find(t=>t.id===id);
-  if(!t||t.c)return;
-  t.c=true;
-  state.pg+=t.r;
-  save();
-  render();
-  alert('领取成功！+'+t.r+' PG');
-}
-
-// ===== CARE =====
-function doCareAction(attr,val) {
-  const sel=state.selectedCare||state.pets[0];
-  if(!sel)return;
-  const pet=state.pets.find(p=>p.uid===sel.uid);
-  if(!pet)return;
-  pet[attr]=Math.min(100,(pet[attr]||100)+val);
-  state.selectedCare=pet;
-  save();
-  render();
-}
-
-// Filter buttons
-document.querySelectorAll('.filter-btn').forEach(el=>{
-  el.addEventListener('click',()=>{
-    state.filter=el.dataset.filter;
-    render();
-  });
-});
+// ===== BOOT =====
+render();
 </script>
 </body>
 </html>
