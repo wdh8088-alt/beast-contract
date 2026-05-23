@@ -435,7 +435,7 @@
         let currentFilter = 'all';
 
         // 初始化
-        function init() {
+        function init() { alert("init() running!"); console.log("init() called");
             // 读取主存档（恢复登录状态和游戏数据）
             const saved = localStorage.getItem('petPlanetData');
             if (saved) {
@@ -1424,7 +1424,7 @@ function showTab(tab, evt) {
         }
 
         // 显示登录UI
-        function showLoginUI() {
+        function showLoginUI() { console.log("showLoginUI called");
             const modal = document.getElementById('loginModal');
             const loginForm = document.getElementById('loginForm');
             const loggedInInfo = document.getElementById('loggedInInfo');
@@ -2545,7 +2545,7 @@ function showTab(tab, evt) {
     }
 
 // Auto-init
-window.addEventListener('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
+window.addEventListeneralert('Page loading, calling init...'); ('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
 </script>
 </body>
 </html>
