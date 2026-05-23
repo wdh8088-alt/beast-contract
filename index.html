@@ -2543,6 +2543,9 @@ function showTab(tab, evt) {
             showToast('合成失败，请重试');
         }
     }
+
+// Auto-init
+window.addEventListener('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
 </script>
 </body>
 </html>
