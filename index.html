@@ -1,1104 +1,2196 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>幻兽契约 - 僵尸闯关</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#1a1a2e;color:#fff;min-height:100vh}
-.page{max-width:480px;margin:0 auto;padding-bottom:80px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻兽契约 - DEMO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 10px; }
+        .container { max-width: 100%; margin: 0 auto; }
+        @media (min-width: 768px) { .container { max-width: 1200px; margin: 0 auto; } }
+        .pet-card img { width: 100%; height: 120px; object-fit: contain; margin-bottom: 10px; }
+        @media (max-width: 767px) {
+            body { padding: 5px; }
+            .header { padding: 12px !important; }
+            .header h1 { font-size: 18px !important; }
+            .tabs { flex-wrap: wrap; gap: 6px !important; }
+            .tab { font-size: 12px !important; padding: 8px 4px !important; min-width: calc(25% - 6px); }
+            .content { padding: 12px !important; }
+            .pet-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 10px !important; }
+            .balances { flex-wrap: wrap; gap: 8px !important; }
+            .balance-item { padding: 6px 12px !important; font-size: 13px; }
+        }
+        /* Dungeon Battle Field */
+        .dungeon-field { position: relative; width: 100%; height: 280px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+        .pet-sprite { position: absolute; transition: left 0.25s ease; text-align: center; z-index: 10; }
+        .pet-circle { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; box-shadow: 0 4px 12px rgba(102,126,234,0.5); margin: 0 auto; }
+        .pet-sprite.atk .pet-circle { transform: scale(1.2); }
+        .zombie-sprite { position: absolute; transition: all 0.25s ease; text-align: center; z-index: 5; }
+        .zombie-circle { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #6B8E23, #556B2F); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
+        .zombie-sprite.hit .zombie-circle { background: linear-gradient(135deg, #FF4444, #FF0000) !important; transform: scale(1.2); }
+        .zombie-sprite.dead .zombie-circle { opacity: 0.2; transform: rotate(90deg) scale(0.5); }
+        .hp-bar { width: 52px; height: 6px; background: #333; border-radius: 3px; margin-top: 2px; overflow: hidden; margin: 2px auto 0; }
+        .hp-fill { height: 100%; background: #E74C3C; border-radius: 3px; transition: width 0.2s; }
+        .hp-fill.green { background: #2ECC71; }
+        .hp-text { font-size: 10px; color: #ccc; text-align: center; display: block; }
+        .wave-bar { display: flex; justify-content: space-between; padding: 6px 10px; background: #0f3460; border-radius: 8px; font-size: 12px; color: #aaa; margin-bottom: 8px; }
+        .skill-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; margin-bottom: 8px; }
+        .skill-btn:disabled { background: #555; color: #888; }
+        .battle-log { max-height: 120px; overflow-y: auto; background: #0f3460; border-radius: 8px; padding: 8px; margin-top: 8px; }
+        .log-line { font-size: 11px; color: #888; padding: 2px 0; display: block; }
+        .start-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        /* Reward Modal */
+        .reward-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .reward-modal.show { display: flex; }
+        .reward-content { background: white; border-radius: 20px; padding: 30px; max-width: 400px; text-align: center; margin: 10px; }
+        .reward-title { font-size: 22px; font-weight: bold; display: block; margin-bottom: 12px; }
+        .reward-eq { padding: 10px; border-radius: 8px; border: 3px solid; margin: 8px 0; text-align: left; }
+        /* Equipment */
+        .eq-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+        .eq-info { flex: 1; }
+        .eq-name { font-weight: bold; display: block; }
+        .eq-tier { font-size: 12px; color: #666; display: block; }
+        .eq-bonus { font-size: 13px; color: #e67e22; font-weight: bold; display: block; }
+        .eq-btn { background: #667eea; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .epet { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+        .epet-name { font-weight: bold; display: block; margin-bottom: 6px; }
+        .epet-slot { padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 12px; border-left: 4px solid; background: #f0f0f0; }
+        .legend-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; font-size: 12px; }
+        /* Fashion */
+        .fashion-item { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+        .fashion-icon { font-size: 36px; width: 50px; text-align: center; }
+        .fashion-info { flex: 1; }
+        .fashion-name { font-weight: bold; display: block; font-size: 14px; }
+        .fashion-desc { font-size: 11px; color: #888; display: block; }
+        .fashion-bonus { font-size: 12px; color: #e67e22; font-weight: bold; display: block; }
+        .fashion-frag { font-size: 11px; color: #9B59B6; display: block; }
+        .synth-btn { background: #ccc; color: #666; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .synth-btn.ready { background: linear-gradient(135deg, #9B59B6, #8E44AD); color: white; }
+        .frag-item { display: flex; justify-content: space-between; padding: 10px 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+        /* Sub tabs */
+        .sub-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .sub-tab { flex: 1; min-width: 80px; text-align: center; padding: 8px; border-radius: 8px; font-size: 13px; background: #f0f0f0; color: #666; cursor: pointer; border: none; }
+        .sub-tab.active { background: #667eea; color: white; }
+        /* Select pet modal */
+        .select-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .select-modal.show { display: flex; }
+        .select-content { background: white; border-radius: 16px; padding: 16px; max-width: 400px; width: 90%; text-align: center; max-height: 70vh; overflow-y: auto; }
+        .select-item { padding: 10px; background: #f0f0f0; border-radius: 8px; margin-bottom: 6px; cursor: pointer; font-size: 13px; text-align: left; }
+        .select-item:hover { background: #667eea; color: white; }
+        .select-cancel { padding: 10px; color: #888; font-size: 13px; margin-top: 6px; cursor: pointer; }
+        .hint-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: left; font-size: 13px; }
+        .game-over-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
+        .game-over-modal.show { display: flex; }
 
-/* Login Screen */
-.login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
-.login-logo{font-size:64px;margin-bottom:10px}
-.login-title{font-size:28px;font-weight:bold;margin-bottom:4px}
-.login-sub{font-size:14px;color:#888;margin-bottom:40px}
-.login-btn{width:80%;max-width:300px;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;margin-bottom:12px}
-.login-btn:active{transform:scale(0.97)}
-.login-hint{font-size:12px;color:#666;margin-top:10px}
-
-/* Header */
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(135deg,#667eea,#764ba2);position:sticky;top:0;z-index:100}
-.logo{font-size:20px;font-weight:bold}
-.stats{display:flex;gap:10px}
-.stat{background:rgba(255,255,255,0.2);padding:4px 10px;border-radius:12px;font-size:13px}
-
-/* Tab Bar */
-.tab-bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:#16213e}
-.tab{flex:1;min-width:calc(25% - 6px);text-align:center;padding:8px 2px;border-radius:10px;font-size:11px;cursor:pointer;background:#0f3460;color:#aaa;transition:all .2s;-webkit-tap-highlight-color:transparent}
-.tab.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-
-/* Content */
-.content{padding:12px}
-.section-title{font-size:16px;font-weight:bold;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #333}
-.empty{text-align:center;color:#555;padding:40px 0;font-size:14px}
-
-/* Pet Grid */
-.pet-grid{display:flex;flex-wrap:wrap;gap:10px}
-.pet-card{width:calc(50% - 5px);background:#16213e;border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent}
-.pet-card:active{transform:scale(0.97)}
-.pet-card.sel{border-color:#667eea;box-shadow:0 0 12px rgba(102,126,234,0.5)}
-.pet-img{font-size:48px;display:block;margin-bottom:4px}
-.pet-name{font-size:14px;font-weight:bold;display:block}
-.pet-info{font-size:11px;color:#888;display:block}
-.pet-happy{font-size:11px;color:#f39c12}
-
-/* Rarity */
-.r-G0{border-left:4px solid #FFD700}
-.r-S-plus{border-left:4px solid #FF00FF}
-.r-SR{border-left:4px solid #3498DB}
-.r-SSR{border-left:4px solid #9B59B6}
-.r-R{border-left:4px solid #2ECC71}
-.r-N{border-left:4px solid #555}
-
-/* Filter */
-.filter-bar{display:flex;gap:6px;margin-bottom:12px}
-.filter-btn{flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;background:#0f3460;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.filter-btn.active{background:#667eea;color:#fff}
-
-/* Hatch */
-.rarity-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px;background:#0f3460;border-radius:10px;margin-bottom:12px}
-.chip{padding:4px 10px;border-radius:6px;font-size:11px;color:#fff}
-.hatch-area{text-align:center;padding:30px 0}
-.egg-btn{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#ffecd2,#fcb69f);border:none;font-size:60px;cursor:pointer;display:block;margin:0 auto;box-shadow:0 4px 16px rgba(252,182,159,0.4)}
-.egg-cost{font-size:13px;color:#888;margin-top:8px}
-.result-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:200}
-.result-box{background:#16213e;border-radius:16px;padding:24px;text-align:center;width:80%}
-.result-name{font-size:22px;font-weight:bold;display:block;margin-bottom:4px}
-.result-rarity{font-size:14px;font-weight:bold;display:block;margin-bottom:6px}
-.result-skill{font-size:13px;color:#e67e22;display:block}
-.result-btn{margin-top:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:14px}
-
-/* Dungeon */
-.battle-field{position:relative;width:100%;height:280px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.pet-sprite{position:absolute;transition:left .25s ease;text-align:center;z-index:10}
-.pet-circle{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold}
-.pet-sprite.atk .pet-circle{transform:scale(1.2)}
-.zombie-sprite{position:absolute;transition:all .25s ease;text-align:center;z-index:5}
-.zombie-circle{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6B8E23,#556B2F);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold}
-.zombie-sprite.hit .zombie-circle{background:linear-gradient(135deg,#FF4444,#FF0000)!important;transform:scale(1.2)}
-.zombie-sprite.dead .zombie-circle{opacity:0.2;transform:rotate(90deg) scale(0.5)}
-.hp-bar{width:52px;height:6px;background:#333;border-radius:3px;margin-top:2px;overflow:hidden}
-.hp-fill{height:100%;background:#E74C3C;border-radius:3px;transition:width .2s}
-.hp-fill.green{background:#2ECC71}
-.hp-text{font-size:10px;color:#ccc;text-align:center;display:block}
-.wave-bar{display:flex;justify-content:space-between;padding:6px 10px;background:#0f3460;border-radius:8px;font-size:12px;color:#aaa;margin-bottom:8px}
-.skill-btn{width:100%;padding:12px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;margin-bottom:8px;-webkit-tap-highlight-color:transparent}
-.skill-btn:disabled{background:#555;color:#888}
-.battle-log{max-height:120px;overflow-y:auto;background:#0f3460;border-radius:8px;padding:8px}
-.log-line{font-size:11px;color:#888;padding:2px 0;display:block}
-.start-btn{width:100%;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:bold;-webkit-tap-highlight-color:transparent}
-.reward-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:200}
-.reward-box{background:#16213e;border-radius:16px;padding:24px;text-align:center;width:80%}
-.reward-title{font-size:22px;font-weight:bold;display:block;margin-bottom:12px}
-.reward-item{display:block;font-size:14px;margin:6px 0}
-.reward-eq{padding:10px;border-radius:8px;border:3px solid;margin:8px 0;text-align:left}
-.reward-eq span{display:block;font-size:12px}
-.reward-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:14px;margin-top:10px}
-
-/* Equipment */
-.sub-tabs{display:flex;gap:8px;margin-bottom:12px}
-.sub-tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;background:#0f3460;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.sub-tab.active{background:#667eea;color:#fff}
-.equip-item{display:flex;align-items:center;justify-content:space-between;background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
-.eq-info{flex:1}
-.eq-name{font-size:14px;font-weight:bold;display:block}
-.eq-tier{font-size:11px;color:#888;display:block}
-.eq-bonus{font-size:13px;color:#e67e22;font-weight:bold;display:block}
-.eq-btn{background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
-.epet{background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
-.epet-name{font-size:14px;font-weight:bold;display:block;margin-bottom:6px}
-.epet-slot{padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;border-left:4px solid;background:#0f3460}
-.epet-unequip{color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px}
-.legend-row{display:flex;justify-content:center;gap:14px;padding:10px;background:#0f3460;border-radius:8px;margin-top:10px;font-size:12px}
-
-/* Fashion */
-.fashion-item{display:flex;align-items:center;gap:10px;background:#16213e;padding:12px;border-radius:10px;margin-bottom:8px}
-.fashion-icon{font-size:36px;width:50px;text-align:center}
-.fashion-info{flex:1}
-.fashion-name{font-size:14px;font-weight:bold;display:block}
-.fashion-desc{font-size:11px;color:#888;display:block}
-.fashion-bonus{font-size:12px;color:#e67e22;font-weight:bold;display:block}
-.fashion-frag{font-size:11px;color:#9B59B6;display:block}
-.synth-btn{background:#555;color:#999;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer}
-.synth-btn.ready{background:linear-gradient(135deg,#9B59B6,#8E44AD);color:#fff}
-.frag-item{display:flex;justify-content:space-between;padding:10px 12px;background:#16213e;border-radius:8px;margin-bottom:6px;font-size:13px}
-
-/* Shop */
-.shop-cat{margin-bottom:16px}
-.shop-title{font-size:14px;font-weight:bold;margin-bottom:8px;padding-left:8px;border-left:4px solid #667eea}
-.shop-item{background:#16213e;padding:14px;border-radius:10px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.shop-item:active{background:#1a2744}
-.shop-name{font-size:14px;font-weight:bold;display:block}
-.shop-desc{font-size:11px;color:#888;display:block;margin:2px 0}
-.shop-price{font-size:13px;color:#e67e22;font-weight:bold}
-
-/* Tasks */
-.task-item{display:flex;align-items:center;justify-content:space-between;background:#16213e;padding:14px;border-radius:10px;margin-bottom:8px}
-.task-name{font-size:14px;font-weight:bold;display:block}
-.task-desc{font-size:11px;color:#888;display:block}
-.task-reward{font-size:12px;color:#e67e22;display:block;margin-top:2px}
-.task-btn{background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
-.task-btn.done{background:#444;color:#888}
-
-/* Care */
-.care-panel{background:#16213e;border-radius:12px;padding:16px;margin-bottom:12px}
-.care-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.care-img{font-size:48px}
-.care-name{font-size:16px;font-weight:bold}
-.care-power{font-size:12px;color:#aaa}
-.status-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
-.sbar{flex:1;height:8px;background:#333;border-radius:4px;overflow:hidden}
-.sfill{height:100%;border-radius:4px;transition:width .3s}
-.fill-hunger{background:linear-gradient(90deg,#f39c12,#e67e22)}
-.fill-clean{background:linear-gradient(90deg,#3498db,#2980b9)}
-.fill-happy{background:linear-gradient(90deg,#2ecc71,#27ae60)}
-.care-btns{display:flex;gap:8px;margin-top:10px}
-.care-btn{flex:1;padding:10px;background:#667eea;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer}
-.care-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
-.care-pet{width:80px;text-align:center;background:#0f3460;padding:8px;border-radius:8px;cursor:pointer;flex-shrink:0;font-size:11px;-webkit-tap-highlight-color:transparent}
-.care-pet.sel{background:#667eea}
-
-/* Select modal */
-.select-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:300}
-.select-box{background:#16213e;border-radius:16px;padding:16px;text-align:center;width:85%}
-.select-box h3{font-size:15px;margin-bottom:10px}
-.select-item{padding:10px;background:#0f3460;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;text-align:left}
-.select-item:active{background:#1a3a5c}
-.select-cancel{padding:10px;color:#888;font-size:13px;margin-top:6px}
-
-/* Game over / Alerts */
-.game-over-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:200}
-.game-over-box{background:#16213e;border-radius:16px;padding:30px;text-align:center;width:80%}
-.game-over-title{font-size:24px;font-weight:bold;display:block;margin-bottom:10px}
-.game-over-sub{font-size:14px;color:#aaa;display:block;margin-bottom:16px}
-.game-over-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 30px;border-radius:10px;cursor:pointer;font-size:15px}
+        .header { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .header h1 { color: #667eea; text-align: center; margin-bottom: 10px; }
+        .balances { display: flex; gap: 20px; justify-content: center; margin-top: 15px; }
+        .balance-item { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 15px; background: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s; }
+        .tab:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .content { background: white; border-radius: 15px; padding: 20px; min-height: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .pet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .pet-card { background: #f8f9fa; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.3s; border: 3px solid transparent; }
+        .pet-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .pet-card.selected { border-color: #667eea; }
+        .pet-card img { width: 100%; height: 120px; object-fit: contain; margin-bottom: 10px; }
+        .pet-card .pet-name { font-weight: bold; margin-bottom: 5px; }
+        .pet-card .pet-type { font-size: 12px; color: #666; }
+        .pet-card .pet-power { font-size: 14px; color: #667eea; font-weight: bold; }
+        .pet-card .pet-hatch-count { font-size: 11px; color: #999; margin-top: 3px; }
+        .rarity-G0 { border-left: 5px solid #FFD700; }
+        .rarity-S-plus { border-left: 5px solid #FF00FF; }
+        .rarity-S { border-left: 5px solid #9B59B6; }
+        .rarity-G2 { border-left: 5px solid #3498DB; }
+        .rarity-G3 { border-left: 5px solid #2ECC71; }
+        .rarity-N { border-left: 5px solid #999; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-gold { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; }
+        .hatch-area { text-align: center; padding: 20px; }
+        .hatch-btn { font-size: 20px; padding: 15px 40px; }
+        .result-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .result-modal.show { display: flex; }
+        .result-content { background: white; border-radius: 20px; padding: 40px; max-width: 500px; text-align: center; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .result-content h2 { color: #667eea; margin-bottom: 20px; }
+        .result-content img { width: 200px; height: 200px; object-fit: contain; margin: 20px 0; }
+        .close-btn { margin-top: 20px; }
+        .progress-bar { background: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 20px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; font-size: 12px; }
+        .stat-item { background: #f8f9fa; padding: 5px; border-radius: 5px; }
+        .rarity-legend { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 10px; }
+        .rarity-item { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .hint-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: left; }
+        .cooldown-timer { color: #e74c3c; font-size: 12px; margin-top: 5px; }
+    
+        .pet-card .actions { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
 </style>
 </head>
 <body>
-<div class="page" id="app"></div>
-<script>
-// ===== DATA =====
-var PETS=[
-  {id:'kungfu_panda',name:'功夫熊猫',profession:'功夫',img:'🐼',basePower:150,rarity:'SR',skill:'猛虎拳',skillDmg:1.5},
-  {id:'kungfu_tiger',name:'功夫虎',profession:'功夫',img:'🐯',basePower:140,rarity:'SR',skill:'碎岩击',skillDmg:1.6},
-  {id:'kungfu_fox',name:'功夫狐',profession:'功夫',img:'🦊',basePower:130,rarity:'R',skill:'旋风腿',skillDmg:1.3},
-  {id:'kungfu_wolf',name:'功夫狼',profession:'功夫',img:'🐺',basePower:135,rarity:'R',skill:'狼牙突',skillDmg:1.4},
-  {id:'kungfu_mouse',name:'功夫鼠',profession:'功夫',img:'🐭',basePower:100,rarity:'N',skill:'鼠拳',skillDmg:1.2},
-  {id:'kungfu_owl',name:'功夫猫头鹰',profession:'功夫',img:'🦉',basePower:110,rarity:'N',skill:'飞翼斩',skillDmg:1.2},
-  {id:'wizard_dragon',name:'法师龙',profession:'法师',img:'🐉',basePower:200,rarity:'SSR',skill:'龙息术',skillDmg:2.0},
-  {id:'wizard_eagle',name:'法师鹰',profession:'法师',img:'🦅',basePower:155,rarity:'SR',skill:'风刃术',skillDmg:1.5},
-  {id:'wizard_fox',name:'法师狐',profession:'法师',img:'🦊',basePower:130,rarity:'R',skill:'火球术',skillDmg:1.4},
-  {id:'wizard_bear',name:'法师熊',profession:'法师',img:'🐻',basePower:145,rarity:'R',skill:'冰冻术',skillDmg:1.3},
-  {id:'wizard_cat',name:'法师猫',profession:'法师',img:'🐱',basePower:105,rarity:'N',skill:'魔法弹',skillDmg:1.2},
-  {id:'wizard_rabbit',name:'法师兔',profession:'法师',img:'🐰',basePower:95,rarity:'N',skill:'治愈术',skillDmg:1.0},
-  {id:'pirate_wolf',name:'海盗狼',profession:'海盗',img:'🐺',basePower:170,rarity:'SR',skill:'钩锁击',skillDmg:1.5},
-  {id:'pirate_tiger',name:'海盗虎',profession:'海盗',img:'🐯',basePower:160,rarity:'SR',skill:'炮轰',skillDmg:1.6},
-  {id:'pirate_fox',name:'海盗狐',profession:'海盗',img:'🦊',basePower:120,rarity:'R',skill:'暗器',skillDmg:1.3},
-  {id:'pirate_dog',name:'海盗狗',profession:'海盗',img:'🐶',basePower:125,rarity:'R',skill:'匕首刺',skillDmg:1.3},
-  {id:'pirate_parrot',name:'海盗鹦鹉',profession:'海盗',img:'🦜',basePower:100,rarity:'N',skill:'啄击',skillDmg:1.1},
-  {id:'pirate_koala',name:'海盗考拉',profession:'海盗',img:'🐨',basePower:90,rarity:'N',skill:'抱摔',skillDmg:1.1},
-  {id:'cowboy_horse',name:'牛仔马',profession:'牛仔',img:'🐴',basePower:160,rarity:'SR',skill:'马蹄踢',skillDmg:1.5},
-  {id:'cowboy_elephant',name:'牛仔象',profession:'牛仔',img:'🐘',basePower:175,rarity:'SSR',skill:'象鼻甩',skillDmg:1.8},
-  {id:'cowboy_rabbit',name:'牛仔兔',profession:'牛仔',img:'🐰',basePower:110,rarity:'R',skill:'套索',skillDmg:1.3},
-  {id:'cowboy_koala',name:'牛仔考拉',profession:'牛仔',img:'🐨',basePower:105,rarity:'R',skill:'拳击',skillDmg:1.2},
-  {id:'cowboy_dog',name:'牛仔狗',profession:'牛仔',img:'🐶',basePower:115,rarity:'N',skill:'撕咬',skillDmg:1.2},
-  {id:'cowboy_seal',name:'牛仔海豹',profession:'牛仔',img:'🦭',basePower:100,rarity:'N',skill:'拍击',skillDmg:1.1},
-  {id:'ninja_cat',name:'忍者猫',profession:'忍者',img:'🐱',basePower:165,rarity:'SR',skill:'忍术斩',skillDmg:1.6},
-  {id:'ninja_wolf',name:'忍者狼',profession:'忍者',img:'🐺',basePower:155,rarity:'SR',skill:'影分身',skillDmg:1.5},
-  {id:'ninja_fox',name:'忍者狐',profession:'忍者',img:'🦊',basePower:125,rarity:'R',skill:'手里剑',skillDmg:1.4},
-  {id:'ninja_rabbit',name:'忍者兔',profession:'忍者',img:'🐰',basePower:115,rarity:'R',skill:'飞踢',skillDmg:1.3},
-  {id:'ninja_duck',name:'忍者鸭',profession:'忍者',img:'🦆',basePower:108,rarity:'N',skill:'水遁',skillDmg:1.2},
-  {id:'ninja_mouse',name:'忍者鼠',profession:'忍者',img:'🐭',basePower:95,rarity:'N',skill:'隐身击',skillDmg:1.2},
-  {id:'chef_bear',name:'厨师熊',profession:'厨师',img:'🐻',basePower:130,rarity:'R',skill:'平底锅',skillDmg:1.4},
-  {id:'chef_cat',name:'厨师猫',profession:'厨师',img:'🐱',basePower:115,rarity:'R',skill:'菜刀斩',skillDmg:1.3},
-  {id:'chef_dog',name:'厨师狗',profession:'厨师',img:'🐶',basePower:120,rarity:'R',skill:'炒锅击',skillDmg:1.3},
-  {id:'chef_pig',name:'厨师猪',profession:'厨师',img:'🐷',basePower:125,rarity:'N',skill:'撞击',skillDmg:1.2},
-  {id:'chef_hamster',name:'厨师仓鼠',profession:'厨师',img:'🐹',basePower:90,rarity:'N',skill:'坚果弹',skillDmg:1.1},
-  {id:'chef_duck',name:'厨师鸭',profession:'厨师',img:'🦆',basePower:85,rarity:'N',skill:'调味粉',skillDmg:1.1}
-];
-var RARITY={G0:{t:'G0至尊',c:'#FFD700',w:2},'S-plus':{t:'S+传说',c:'#FF00FF',w:10},SSR:{t:'SSR精英',c:'#9B59B6',w:20},SR:{t:'SR稀有',c:'#3498DB',w:18},R:{t:'R普通',c:'#2ECC71',w:25},N:{t:'N普通',c:'#999',w:25}};
-var ZOMBIE=[
-  {id:'z1',name:'普通僵尸',hp:200,atk:15,spd:1},
-  {id:'z2',name:'奔跑僵尸',hp:150,atk:20,spd:2},
-  {id:'z3',name:'铁桶僵尸',hp:400,atk:15,spd:0.7},
-  {id:'z4',name:'喷吐僵尸',hp:180,atk:30,spd:0.8},
-  {id:'z5',name:'巨型僵尸',hp:600,atk:35,spd:0.5},
-  {id:'z6',name:'僵尸王',hp:1200,atk:50,spd:0.6}
-];
-var ETIERS=[{t:'white',n:'白装',c:'#CCC',b:5,r:40},{t:'blue',n:'蓝装',c:'#3498DB',b:15,r:30},{t:'purple',n:'紫装',c:'#9B59B6',b:35,r:18},{t:'red',n:'红装',c:'#E74C3C',b:70,r:9},{t:'orange',n:'橙装',c:'#FF8C00',b:150,r:3}];
-var SLOTS=['weapon','armor','accessory'];
-var SLOT_N={weapon:'武器',armor:'防具',accessory:'饰品'};
-var PREFIXES={weapon:['木剑','铁剑','精钢剑','玄铁剑','仙剑'],armor:['布甲','皮甲','锁子甲','玄铁甲','仙甲'],accessory:['木环','铜戒','银链','金坠','仙符']};
-var FASHIONS=[
-  {id:'m1',name:'青衫修士',g:'male',frag:10,desc:'青衫长袍，剑气纵横',pb:30},
-  {id:'m2',name:'金甲战神',g:'male',frag:15,desc:'金甲披身，战意冲天',pb:50},
-  {id:'m3',name:'龙袍帝君',g:'male',frag:30,desc:'龙袍加身，号令天下',pb:100},
-  {id:'f1',name:'白衣仙子',g:'female',frag:10,desc:'白衣飘飘，仙气凌然',pb:30},
-  {id:'f2',name:'紫霞神女',g:'female',frag:15,desc:'紫霞加身，神威浩荡',pb:50},
-  {id:'f3',name:'凤冠皇后',g:'female',frag:30,desc:'凤冠霞帔，母仪天下',pb:100}
-];
-var SHOP=[
-  {id:'egg1',name:'至尊扭蛋',desc:'2%概率G0至尊',price:1000,type:'egg',rarity:'G0'},
-  {id:'egg2',name:'传说扭蛋',desc:'10%概率S+传说',price:500,type:'egg',rarity:'S-plus'},
-  {id:'egg3',name:'普通扭蛋',desc:'随机宠物',price:100,type:'egg'},
-  {id:'food1',name:'苹果',desc:'饱食+20',price:10,type:'food',h:20},
-  {id:'food2',name:'烤肉',desc:'饱食+40',price:20,type:'food',h:40},
-  {id:'food3',name:'蛋糕',desc:'饱食+50，心情+10',price:35,type:'food',h:50,hp:10},
-  {id:'food4',name:'豪华大餐',desc:'饱食+80，心情+20',price:60,type:'food',h:80,hp:20},
-  {id:'clean1',name:'毛巾',desc:'清洁+20',price:10,type:'clean',c:20},
-  {id:'clean2',name:'香皂',desc:'清洁+40',price:20,type:'clean',c:40},
-  {id:'clean3',name:'宠物香波',desc:'清洁+60，心情+5',price:35,type:'clean',c:60,hp:5},
-  {id:'clean4',name:'SPA护理',desc:'清洁+80，心情+15',price:50,type:'clean',c:80,hp:15},
-  {id:'toy1',name:'小球',desc:'心情+20',price:15,type:'toy',hp:20},
-  {id:'toy2',name:'飞盘',desc:'心情+35',price:25,type:'toy',hp:35},
-  {id:'toy3',name:'毛绒玩具',desc:'心情+50',price:40,type:'toy',hp:50},
-  {id:'all1',name:'饲料包',desc:'全体饱食+50',price:200,type:'all',ah:50},
-  {id:'all2',name:'清洁套装',desc:'全体清洁+50',price:150,type:'all',ac:50},
-  {id:'all3',name:'欢乐礼包',desc:'全体心情+30',price:180,type:'all',ahp:30}
-];
+    <div class="container">
+        <div class="header">
+            <h1>🐾 幻兽契约</h1>
+            <p style="text-align: center; color: #666;">DEMO 版本 - 体验完整玩法</p>
+            <div class="balances">
+                <div class="balance-item">💰 PG币：<span id="pgBalance">10000</span></div>
+                <div class="balance-item" id="userStatus" style="cursor:pointer;" onclick="showLoginUI()">👤 未登录</div>
+                <div class="balance-item" id="logoutBtn" style="display:none;cursor:pointer;background:#e74c3c;" onclick="doLogout()">🚪 退出</div>
+            </div>
+        </div>
 
-// ===== STATE =====
-var ST={
-  loggedIn:false,
-  userName:'',
-  pg:10000,
-  pets:[],
-  tasks:[{id:1,n:'每日签到',d:'每天签到',r:50,c:false},{id:2,n:'孵化宠物',d:'孵化一只宠物',r:30,c:false},{id:3,n:'闯关一次',d:'完成一次闯关',r:40,c:false},{id:4,n:'喂食宠物',d:'给宠物喂食',r:20,c:false}],
-  stage:1,
-  equip:[],
-  frag:{},
-  fash:[],
-  tab:'collection',
-  filter:'all',
-  dungeonPet:null,
-  dungeonActive:false,
-  selectedCare:null,
-  equipTab:'list',
-  fashionTab:'list'
-};
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('collection', event)">🎒 我的宠物</button>
+            <button class="tab" onclick="showTab('hatch', event)">🥚 孵化</button>
+            <button class="tab" onclick="showTab('dungeon', event)">⚔️ 闯关</button>
+            <button class="tab" onclick="showTab('equip', event)">🗡️ 装备</button>
+            <button class="tab" onclick="showTab('fashion', event)">👘 时装</button>
+            <button class="tab" onclick="showTab('tasks', event)">📋 任务</button>
+            <button class="tab" onclick="showTab('shop', event)">🏪 商店</button>
+            <button class="tab" onclick="showTab('care', event)">❤️ 养成</button>
+            <button class="tab" onclick="showTab('synth', event)">🔬 合成</button>
+        </div>
 
-var _pet=null,_power=0,_waves=[],_waveIdx=0,_zombies=[],_skillCd=0,_dungeonLog=[];
-var _atkTimer=null,_zTimer=null;
-var _resultPet=null;
-var _reward=null;
+        <div class="content" id="content">
+        </div>
+    </div>
 
-// ===== INIT =====
-function load(){
-  try{
-    var d=JSON.parse(localStorage.getItem('bc2')||'null');
-    if(d){
-      ST.loggedIn=d.loggedIn||false;
-      ST.userName=d.userName||'';
-      ST.pg=d.pg||10000;
-      ST.pets=d.pets||[];
-      ST.tasks=d.tasks||ST.tasks;
-      ST.stage=d.stage||1;
-      ST.equip=d.equip||[];
-      ST.frag=d.frag||{};
-      ST.fash=d.fash||[];
-    }
-  }catch(e){}
-}
-function save(){
-  try{localStorage.setItem('bc2',JSON.stringify({
-    loggedIn:ST.loggedIn,userName:ST.userName,pg:ST.pg,pets:ST.pets,
-    tasks:ST.tasks,stage:ST.stage,equip:ST.equip,frag:ST.frag,fash:ST.fash
-  }));}catch(e){}
-}
-load();
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <h2 id="resultTitle">🎉 孵化成功！</h2>
+            <img id="resultImage" src="" alt="">
+            <div id="resultInfo"></div>
+            <button class="btn btn-primary close-btn" onclick="closeModal()">太棒了！</button>
+        </div>
+    </div>
 
-// ===== HELPERS =====
-function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
-function rr(){
-  var total=0;for(var k in RARITY)total+=RARITY[k].w;
-  var r=Math.random()*total;
-  for(var k in RARITY){r-=RARITY[k].w;if(r<=0)return k;}
-  return'N';
-}
-function hp(pet){
-  var p=pet.power||0;
-  if(pet.equip)for(var i=0;i<SLOTS.length;i++){if(pet.equip[SLOTS[i]])p+=pet.equip[SLOTS[i]].b||0;}
-  if(pet.fashion){var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===pet.fashion){f=FASHIONS[i];break;}if(f)p+=f.pb||0;}
-  p=Math.floor(p*(1+((pet.happy||100)-50)*0.004));
-  return p;
-}
-function mkPet(r){
-  var pool=[];for(var i=0;i<PETS.length;i++)if(PETS[i].rarity===r)pool.push(PETS[i]);
-  var base=pool.length?pool[Math.floor(Math.random()*pool.length)]:PETS[0];
-  return{uid:uid(),id:base.id,name:base.name,profession:base.profession,img:base.img,basePower:base.basePower,rarity:r,skill:base.skill,skillDmg:base.skillDmg,power:base.basePower+Math.floor(Math.random()*20),level:1,hunger:100,clean:100,happy:100,equip:{weapon:null,armor:null,accessory:null},fashion:null};
-}
-function fpets(){
-  var ps=ST.pets;
-  if(ST.filter==='legend'){ps=ps.filter(function(p){return['G0','S-plus','SSR'].indexOf(p.rarity)>-1;});}
-  else if(ST.filter==='elite'){ps=ps.filter(function(p){return['SR','SSR'].indexOf(p.rarity)>-1;});}
-  else if(ST.filter==='normal'){ps=ps.filter(function(p){return['R','N'].indexOf(p.rarity)>-1;});}
-  return ps;
-}
-function getWaves(stage){
-  var waves=[];
-  var count=Math.min(3,1+Math.floor(stage/5));
-  for(var w=0;w<count;w++){
-    var wave=[];
-    var num=2+Math.floor(stage/3)+w;
-    for(var i=0;i<num;i++){
-      var zi=stage<3?0:stage<6?Math.floor(Math.random()*2):stage<10?Math.floor(Math.random()*4):Math.floor(Math.random()*5);
-      if(stage%5===0&&stage>0&&w===count-1&&i===num-1)zi=5;
-      var z=ZOMBIE[zi];
-      var hpM=1+(stage-1)*0.3;
-      var atkM=1+(stage-1)*0.2;
-      wave.push({uid:uid(),name:z.name,hp:Math.floor(z.hp*hpM),maxHp:Math.floor(z.hp*hpM),atk:Math.floor(z.atk*atkM),spd:z.spd,x:200+i*28,y:50+(i%3)*55,hit:false,dead:false});
-    }
-    waves.push(wave);
-  }
-  return waves;
-}
-function dropEquip(stage){
-  var bonus=Math.min(stage*2,30);
-  var roll=Math.random()*100,acc=0,ti=0;
-  for(var i=0;i<ETIERS.length;i++){
-    var rate=i<2?ETIERS[i].r-bonus/2:i<3?ETIERS[i].r+bonus/4:i<4?ETIERS[i].r+bonus/4:ETIERS[i].r+bonus/6;
-    acc+=Math.max(rate,1);
-    if(roll<acc){ti=i;break;}
-  }
-  var t=ETIERS[ti],slot=SLOTS[Math.floor(Math.random()*3)];
-  return{uid:uid(),name:PREFIXES[slot][ti],slot:slot,t:t.t,n:t.n,c:t.c,b:t.b+Math.floor(Math.random()*t.b*0.3),stage:stage};
-}
+    <div class="result-modal" id="petDetailModal">
+        <div class="result-content" style="max-width: 600px;">
+            <h2 id="detailTitle">🐾 宠物详情</h2>
+            <img id="detailImage" src="" alt="" style="width: 150px; height: 150px;">
+            <div id="detailInfo" style="text-align: left; margin-top: 20px;"></div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-primary" onclick="setBattlePet()">⚔️ 出战</button>
+                <button class="btn btn-gold" onclick="setSynthesisPet()">🔬 选为合成</button>
+                <button class="btn close-btn" onclick="closePetDetail()" style="background: #ccc; color: #333;">关闭</button>
+            </div>
+        </div>
+    </div>
 
-// ===== RENDER =====
-function render(){
-  var app=document.getElementById('app');
-  if(!ST.loggedIn){
-    app.innerHTML=renderLogin();
-    return;
-  }
-  app.innerHTML=renderHeader()+renderTabBar()+'<div class="content" id="content">'+renderContent()+'</div>';
-  attachEvents();
-}
+    <div class="reward-modal" id="rewardModal">
+        <div class="reward-content">
+            <div class="reward-title" id="rewardTitle">🎉 闯关成功！</div>
+            <div id="rewardBody"></div>
+            <button class="btn btn-primary" onclick="closeReward()" style="margin-top:15px;">收下奖励</button>
+        </div>
+    </div>
 
-function renderLogin(){
-  return '<div class="login-screen">'+
-    '<div class="login-logo">🐾</div>'+
-    '<div class="login-title">幻兽契约</div>'+
-    '<div class="login-sub">僵尸闯关 · 装备收集 · 时装合成</div>'+
-    '<button class="login-btn" id="loginBtn">微信一键登录</button>'+
-    '<button class="login-btn" id="guestBtn" style="background:#0f3460">游客登录</button>'+
-    '<div class="login-hint">登录即表示同意用户协议</div>'+
-  '</div>';
-}
+    <div class="select-modal" id="selectPetModal">
+        <div class="select-content">
+            <h3 id="selectTitle" style="margin-bottom:12px;">选择宠物</h3>
+            <div id="selectList"></div>
+            <div class="select-cancel" onclick="closeSelectPet()">取消</div>
+        </div>
+    </div>
 
-function renderHeader(){
-  return '<div class="header">'+
-    '<div class="logo">幻兽契约</div>'+
-    '<div class="stats">'+
-      '<div class="stat">💰 <span id="hdr_pg">'+ST.pg+'</span></div>'+
-      '<div class="stat">🐾 '+ST.pets.length+'只</div>'+
-    '</div>'+
-  '</div>';
-}
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="reward-content">
+            <div class="reward-title" id="gameOverTitle">😢 闯关失败</div>
+            <p id="gameOverMsg" style="color:#666;margin:10px 0;">宠物倒下了，下次再来！</p>
+            <button class="btn btn-primary" onclick="closeGameOver()">确定</button>
+        </div>
+    </div>
 
-function renderTabBar(){
-  var tabs=['🐾宠物','🥚孵化','⚔️闯关','🗡️装备','👘时装','🏪商店','📋任务','❤️养成'];
-  var ids=['collection','hatch','dungeon','equip','fashion','shop','tasks','care'];
-  var html='<div class="tab-bar">';
-  for(var i=0;i<tabs.length;i++){
-    html+='<div class="tab'+(ST.tab===ids[i]?' active':'')+'" data-tab="'+ids[i]+'">'+tabs[i]+'</div>';
-  }
-  html+='</div>';
-  return html;
-}
+<div class="result-modal" id="loginModal">
+        <div class="result-content" style="max-width: 400px;">
+            <h2 id="loginTitle">👤 登录 / 注册</h2>
+            <div id="loginForm" style="text-align: left; margin-top: 20px;">
+                <p style="margin-bottom: 10px;"><strong>用户名：</strong></p>
+                <input type="text" id="usernameInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;" placeholder="输入用户名">
+                <p style="margin: 15px 0 10px;"><strong>密码：</strong></p>
+                <input type="password" id="passwordInput" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;" placeholder="输入密码">
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="doLogin()" style="flex:1;">登录</button>
+                    <button class="btn btn-gold" onclick="doRegister()" style="flex:1;">注册</button>
+                </div>
+                <p style="margin-top: 15px; font-size: 12px; color: #666;">💡 注册赠送 500 PG！</p>
+            </div>
+            <div id="loggedInInfo" style="display: none; text-align: left; margin-top: 20px;">
+                <p style="font-size: 18px;">欢迎回来，<strong id="loggedUsername"></strong>！</p>
+                <p style="margin-top: 10px; color: #666;">注册时间：<span id="registerTime"></span></p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="closeLoginModal()" style="flex:1;">开始游戏</button>
+                    <button class="btn" onclick="doLogout()" style="flex:1; background: #e74c3c; color: white;">退出登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function renderContent(){
-  switch(ST.tab){
-    case'collection':return renderCollection();
-    case'hatch':return renderHatch();
-    case'dungeon':return renderDungeon();
-    case'equip':return renderEquip();
-    case'fashion':return renderFashion();
-    case'shop':return renderShop();
-    case'tasks':return renderTasks();
-    case'care':return renderCare();
-  }
-  return'';
-}
+    <script>
+        // 宠物数据库（36只 + 创世6只）
+        const petDatabase = [
+            { id: 'kungfu_fox', name: '功夫狐', profession: '功夫', rarity: 'G2', power: 1200, img: 'kungfu_fox.png' },
+            { id: 'kungfu_tiger', name: '功夫虎', profession: '功夫', rarity: 'G2', power: 1350, img: 'kungfu_tiger.png' },
+            { id: 'kungfu_panda', name: '功夫熊猫', profession: '功夫', rarity: 'G2', power: 1300, img: 'kungfu_panda.png' },
+            { id: 'kungfu_wolf', name: '功夫狼', profession: '功夫', rarity: 'G2', power: 1250, img: 'kungfu_wolf.png' },
+            { id: 'kungfu_mouse', name: '功夫鼠', profession: '功夫', rarity: 'G2', power: 1150, img: 'kungfu_mouse.png' },
+            { id: 'kungfu_owl', name: '功夫猫头鹰', profession: '功夫', rarity: 'G2', power: 1180, img: 'kungfu_owl.png' },
+            { id: 'chef_cat', name: '厨师猫', profession: '厨师', rarity: 'G2', power: 1100, img: 'chef_cat.png' },
+            { id: 'chef_dog', name: '厨师狗', profession: '厨师', rarity: 'G2', power: 1150, img: 'chef_dog.png' },
+            { id: 'chef_bear', name: '烘焙熊', profession: '厨师', rarity: 'G2', power: 1200, img: 'chef_bear.png' },
+            { id: 'chef_hamster', name: '厨师仓鼠', profession: '厨师', rarity: 'G2', power: 1050, img: 'chef_hamster.png' },
+            { id: 'chef_duck', name: '厨师鸭', profession: '厨师', rarity: 'G2', power: 1080, img: 'chef_duck.png' },
+            { id: 'chef_pig', name: '厨师猪', profession: '厨师', rarity: 'G2', power: 1120, img: 'chef_pig.png' },
+            { id: 'wizard_bear', name: '魔法熊', profession: '魔法', rarity: 'G2', power: 1250, img: 'wizard_bear.png' },
+            { id: 'wizard_cat', name: '魔法猫', profession: '魔法', rarity: 'G2', power: 1180, img: 'wizard_cat.png' },
+            { id: 'wizard_fox', name: '黑魔法狐', profession: '魔法', rarity: 'G2', power: 1220, img: 'wizard_fox.png' },
+            { id: 'wizard_dragon', name: '魔法龙', profession: '魔法', rarity: 'S', power: 1800, img: 'wizard_dragon.png' },
+            { id: 'wizard_rabbit', name: '魔法兔', profession: '魔法', rarity: 'G2', power: 1150, img: 'wizard_rabbit.png' },
+            { id: 'wizard_eagle', name: '魔法鹰', profession: '魔法', rarity: 'G2', power: 1190, img: 'wizard_eagle.png' },
+            { id: 'cowboy_dog', name: '牛仔狗', profession: '牛仔', rarity: 'G2', power: 1150, img: 'cowboy_dog.png' },
+            { id: 'cowboy_horse', name: '牛仔马', profession: '牛仔', rarity: 'G2', power: 1200, img: 'cowboy_horse.png' },
+            { id: 'cowboy_rabbit', name: '牛仔兔', profession: '牛仔', rarity: 'G2', power: 1100, img: 'cowboy_rabbit.png' },
+            { id: 'cowboy_elephant', name: '牛仔象', profession: '牛仔', rarity: 'G2', power: 1250, img: 'cowboy_elephant.png' },
+            { id: 'cowboy_seal', name: '牛仔海豹', profession: '牛仔', rarity: 'G2', power: 1120, img: 'cowboy_seal.png' },
+            { id: 'cowboy_koala', name: '牛仔考拉', profession: '牛仔', rarity: 'G2', power: 1080, img: 'cowboy_koala.png' },
+            { id: 'ninja_rabbit', name: '忍者兔', profession: '忍者', rarity: 'G2', power: 1180, img: 'ninja_rabbit.png' },
+            { id: 'ninja_fox', name: '忍者狐', profession: '忍者', rarity: 'G2', power: 1220, img: 'ninja_fox.png' },
+            { id: 'ninja_cat', name: '忍者猫', profession: '忍者', rarity: 'G2', power: 1200, img: 'ninja_cat.png' },
+            { id: 'ninja_mouse', name: '忍者鼠', profession: '忍者', rarity: 'G2', power: 1120, img: 'ninja_mouse.png' },
+            { id: 'ninja_wolf', name: '忍者狼', profession: '忍者', rarity: 'G2', power: 1250, img: 'ninja_wolf.png' },
+            { id: 'ninja_duck', name: '忍者鸭', profession: '忍者', rarity: 'G2', power: 1080, img: 'ninja_duck.png' },
+            { id: 'pirate_parrot', name: '海盗鹦鹉', profession: '海盗', rarity: 'G2', power: 1150, img: 'pirate_parrot.png' },
+            { id: 'pirate_dog', name: '海盗狗', profession: '海盗', rarity: 'G2', power: 1180, img: 'pirate_dog.png' },
+            { id: 'pirate_fox', name: '海盗狐', profession: '海盗', rarity: 'G2', power: 1200, img: 'pirate_fox.png' },
+            { id: 'pirate_tiger', name: '海盗虎', profession: '海盗', rarity: 'G2', power: 1250, img: 'pirate_tiger.png' },
+            { id: 'pirate_wolf', name: '海盗狼', profession: '海盗', rarity: 'G2', power: 1220, img: 'pirate_wolf.png' },
+            { id: 'pirate_koala', name: '海盗考拉', profession: '海盗', rarity: 'G2', power: 1100, img: 'pirate_koala.png' },
+        ];
 
-// ===== COLLECTION =====
-function renderCollection(){
-  var ps=fpets();
-  if(!ps.length)return'<div class="empty">还没有宠物，先去孵化吧！</div>';
-  var html='<div class="filter-bar">'+
-    '<div class="filter-btn'+(ST.filter==='all'?' active':'')+'" data-act="filter" data-v="all">全部</div>'+
-    '<div class="filter-btn'+(ST.filter==='legend'?' active':'')+'" data-act="filter" data-v="legend">传说</div>'+
-    '<div class="filter-btn'+(ST.filter==='elite'?' active':'')+'" data-act="filter" data-v="elite">精英</div>'+
-    '<div class="filter-btn'+(ST.filter==='normal'?' active':'')+'" data-act="filter" data-v="normal">普通</div>'+
-  '</div><div class="pet-grid">';
-  for(var i=0;i<ps.length;i++){
-    var p=ps[i];
-    html+='<div class="pet-card r-'+p.rarity+'" data-act="petDetail" data-uid="'+p.uid+'">'+
-      '<span class="pet-img">'+p.img+'</span>'+
-      '<span class="pet-name">'+p.name+'</span>'+
-      '<span class="pet-info">Lv.'+(p.level||1)+' ⚔️'+hp(p)+'</span>'+
-      '<span class="pet-happy">😊'+(p.happy||100)+'%</span>'+
-    '</div>';
-  }
-  return html+'</div>';
-}
+        // 创世宠物特别版本
+        const genesisPets = [
+            { id: 'genesis_fox', name: '创世·功夫狐', profession: '功夫', rarity: 'G0', power: 2500, img: 'kungfu_fox.png' },
+            { id: 'genesis_cat', name: '创世·厨师猫', profession: '厨师', rarity: 'G0', power: 2600, img: 'chef_cat.png' },
+            { id: 'genesis_bear', name: '创世·魔法熊', profession: '魔法', rarity: 'G0', power: 2700, img: 'wizard_bear.png' },
+            { id: 'genesis_dog', name: '创世·牛仔狗', profession: '牛仔', rarity: 'G0', power: 2550, img: 'cowboy_dog.png' },
+            { id: 'genesis_rabbit', name: '创世·忍者兔', profession: '忍者', rarity: 'G0', power: 2650, img: 'ninja_rabbit.png' },
+            { id: 'genesis_parrot', name: '创世·海盗鹦鹉', profession: '海盗', rarity: 'G0', power: 2450, img: 'pirate_parrot.png' },
+        ];
 
-// ===== HATCH =====
-function renderHatch(){
-  return '<div class="rarity-row">'+
-    '<span class="chip" style="background:#FFD700;color:#333">G0 2%</span>'+
-    '<span class="chip" style="background:#FF00FF">S+ 10%</span>'+
-    '<span class="chip" style="background:#9B59B6">SSR 20%</span>'+
-    '<span class="chip" style="background:#3498DB">SR 18%</span>'+
-    '<span class="chip" style="background:#2ECC71">R 25%</span>'+
-    '<span class="chip" style="background:#555">N 25%</span>'+
-  '</div>'+
-  '<div class="hatch-area">'+
-    '<button class="egg-btn" id="hatchBtn">🥚</button>'+
-    '<div class="egg-cost">100 PG / 次</div>'+
-  '</div>';
-}
 
-// ===== DUNGEON =====
-function renderDungeon(){
-  if(ST.dungeonActive)return renderBattle();
-  if(_reward)return renderReward();
-  var ps=ST.pets;
-  if(!ps.length)return'<div class="empty">还没有宠物，先去孵化！</div>';
-  var html='<div class="section-title">⚔️ 僵尸闯关 - 第'+ST.stage+'关</div>'+
-    '<div style="font-size:12px;color:#888;margin-bottom:10px">选择出战宠物</div>'+
-    '<div class="pet-grid">';
-  for(var i=0;i<ps.length;i++){
-    var p=ps[i];
-    html+='<div class="pet-card r-'+p.rarity+(ST.dungeonPet===p.uid?' sel':'')+'" data-act="selDungeon" data-uid="'+p.uid+'">'+
-      '<span class="pet-img">'+p.img+'</span>'+
-      '<span class="pet-name">'+p.name+'</span>'+
-      '<span class="pet-info">⚔️'+hp(p)+'</span>'+
-      '<span class="pet-happy">😊'+(p.happy||100)+'%</span>'+
-    '</div>';
-  }
-  html+='</div><button class="start-btn" id="startBtn"'+(ST.dungeonPet?'':' disabled style="opacity:0.5"')+'>⚔️ 开始闯关</button>';
-  return html;
-}
+        // ===== V2.0 僵尸闯关数据 =====
+        const ZOMBIE = [
+            { id: 'z1', name: '普通僵尸', hp: 200, atk: 15, spd: 1 },
+            { id: 'z2', name: '奔跑僵尸', hp: 150, atk: 20, spd: 2 },
+            { id: 'z3', name: '铁桶僵尸', hp: 400, atk: 15, spd: 0.7 },
+            { id: 'z4', name: '喷吐僵尸', hp: 180, atk: 30, spd: 0.8 },
+            { id: 'z5', name: '巨型僵尸', hp: 600, atk: 35, spd: 0.5 },
+            { id: 'z6', name: '僵尸王', hp: 1200, atk: 50, spd: 0.6 }
+        ];
+        const ETIERS = [
+            { t: 'white', n: '白装', c: '#CCC', b: 5, r: 40 },
+            { t: 'blue', n: '蓝装', c: '#3498DB', b: 15, r: 30 },
+            { t: 'purple', n: '紫装', c: '#9B59B6', b: 35, r: 18 },
+            { t: 'red', n: '红装', c: '#E74C3C', b: 70, r: 9 },
+            { t: 'orange', n: '橙装', c: '#FF8C00', b: 150, r: 3 }
+        ];
+        const SLOTS = ['weapon', 'armor', 'accessory'];
+        const SLOT_N = { weapon: '武器', armor: '防具', accessory: '饰品' };
+        const PREFIXES = {
+            weapon: ['木剑', '铁剑', '精钢剑', '玄铁剑', '仙剑'],
+            armor: ['布甲', '皮甲', '锁子甲', '玄铁甲', '仙甲'],
+            accessory: ['木环', '铜戒', '银链', '金坠', '仙符']
+        };
+        const FASHIONS = [
+            { id: 'm1', name: '青衫修士', g: 'male', frag: 10, desc: '青衫长袍，剑气纵横', pb: 30 },
+            { id: 'm2', name: '金甲战神', g: 'male', frag: 15, desc: '金甲披身，战意冲天', pb: 50 },
+            { id: 'm3', name: '龙袍帝君', g: 'male', frag: 30, desc: '龙袍加身，号令天下', pb: 100 },
+            { id: 'f1', name: '白衣仙子', g: 'female', frag: 10, desc: '白衣飘飘，仙气凌然', pb: 30 },
+            { id: 'f2', name: '紫霞神女', g: 'female', frag: 15, desc: '紫霞加身，神威浩荡', pb: 50 },
+            { id: 'f3', name: '凤冠皇后', g: 'female', frag: 30, desc: '凤冠霞帔，母仪天下', pb: 100 }
+        ];
+        // V2游戏状态
+        let dungeonState = {
+            stage: 1,
+            equip: [],
+            frag: {},
+            fash: [],
+            dungeonPet: null,
+            dungeonActive: false
+        };
+        let _dPet = null, _dPower = 0, _waves = [], _waveIdx = 0, _zombies = [], _skillCd = 0;
+        let _dungeonLog = [], _reward = null;
+        let _atkTimer = null, _zTimer = null;
+        let _petHp = 100, _petMaxHp = 100, _petX = 40, _petY = 100;
+        let _subTab = 'list';
+        let _fashionTab = 'list';
+        let _selectCb = null;
 
-function renderBattle(){
-  var petX=ST.petX||40;
-  var petY=ST.petY||100;
-  var petHp=ST.petHp||100;
-  var petMaxHp=ST.petMaxHp||100;
-  var logHtml='';
-  var log=_dungeonLog||[];
-  for(var i=Math.max(0,log.length-6);i<log.length;i++)logHtml+='<div class="log-line">'+log[i]+'</div>';
-  var html='<div class="battle-field" id="bfield">';
-  html+='<div class="pet-sprite'+(petX>60?' atk':'')+'" id="petSprite" style="left:'+petX+'px;top:'+petY+'px">'+
-    '<div class="pet-circle">'+(_pet?_pet.img:'?')+'</div>'+
-    '<div class="hp-bar"><div class="hp-fill green" id="petHpFill" style="width:'+Math.max(0,petHp/petMaxHp*100)+'%"></div></div>'+
-    '<div class="hp-text">'+Math.max(0,petHp)+'/'+petMaxHp+'</div></div>';
-  for(var i=0;i<_zombies.length;i++){
-    var z=_zombies[i];
-    html+='<div class="zombie-sprite'+(z.dead?' dead':'')+(z.hit?' hit':'')+'" style="left:'+z.x+'px;top:'+z.y+'px">'+
-      '<div class="zombie-circle">'+z.name[0]+'</div>'+
-      '<div class="hp-bar"><div class="hp-fill" style="width:'+Math.max(0,z.hp/z.maxHp*100)+'%"></div></div>'+
-      '<div class="hp-text">'+Math.max(0,z.hp)+'/'+z.maxHp+'</div></div>';
-  }
-  html+='</div>';
-  html+='<div class="wave-bar"><span>波次 '+(_waveIdx+1)+'/'+_waves.length+'</span><span>第'+ST.stage+'关</span></div>';
-  html+='<button class="skill-btn" id="skillBtn"'+(_skillCd>0?' disabled':'')+'>'+(_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+(_pet?_pet.skill:'技能'))+'</button>';
-  html+='<div class="battle-log">'+logHtml+'</div>';
-  return html;
-}
-
-function renderReward(){
-  var r=_reward;
-  return '<div class="reward-modal"><div class="reward-box">'+
-    '<div class="reward-title">🎉 闯关成功！</div>'+
-    '<div class="reward-item">💰 +'+r.pg+' PG</div>'+
-    '<div class="reward-eq" style="border-color:'+r.equip.c+'">'+
-      '<span style="color:'+r.equip.c+';font-weight:bold">'+r.equip.n+'</span>'+
-      '<span>'+r.equip.name+'</span>'+
-      '<span>+'+r.equip.b+' 战力</span></div>'+
-    (r.frag?'<div class="reward-item">💎 时装碎片×1</div>':'')+
-    '<button class="reward-btn" id="closeReward">收下奖励</button>'+
-  '</div></div>';
-}
-
-// ===== EQUIP =====
-function renderEquip(){
-  var html='<div class="sub-tabs">'+
-    '<div class="sub-tab'+(ST.equipTab==='list'?' active':'')+'" data-act="equipTab" data-v="list">背包</div>'+
-    '<div class="sub-tab'+(ST.equipTab==='equipped'?' active':'')+'" data-act="equipTab" data-v="equipped">已装备</div>'+
-  '</div>';
-  if(ST.equipTab==='list'){
-    if(!ST.equip.length)return html+'<div class="empty">背包空空，闯关获取装备吧！</div>';
-    for(var i=0;i<ST.equip.length;i++){
-      var e=ST.equip[i];
-      html+='<div class="equip-item">'+
-        '<div class="eq-info">'+
-          '<div class="eq-name" style="color:'+e.c+'">'+e.name+'</div>'+
-          '<div class="eq-tier">'+e.n+' · '+SLOT_N[e.slot]+'</div>'+
-          '<div class="eq-bonus">+'+e.b+' 战力</div></div>'+
-        '<button class="eq-btn" data-act="equipItem" data-uid="'+e.uid+'">装备</button></div>';
-    }
-  }else{
-    var any=false;
-    for(var i=0;i<ST.pets.length;i++){
-      var pet=ST.pets[i];
-      if(pet.equip&&(pet.equip.weapon||pet.equip.armor||pet.equip.accessory)){
-        any=true;
-        html+='<div class="epet"><div class="epet-name">'+pet.name+' (⚔️'+hp(pet)+')</div>';
-        for(var j=0;j<SLOTS.length;j++){
-          var s=SLOTS[j];
-          if(pet.equip[s]){
-            html+='<div class="epet-slot" style="border-color:'+pet.equip[s].c+'">'+SLOT_N[s]+': '+pet.equip[s].name+'(+'+pet.equip[s].b+')'+
-              '<span class="epet-unequip" data-act="unequip" data-uid="'+pet.uid+'" data-slot="'+s+'">[卸下]</span></div>';
-          }
-        }
-        html+='</div>';
-      }
-    }
-    if(!any)html+='<div class="empty">还没有装备</div>';
-  }
-  html+='<div class="legend-row"><span style="color:#CCC">白装</span><span style="color:#3498DB">蓝装</span><span style="color:#9B59B6">紫装</span><span style="color:#E74C3C">红装</span><span style="color:#FF8C00">橙装</span></div>';
-  return html;
-}
-
-// ===== FASHION =====
-function renderFashion(){
-  var html='<div class="sub-tabs">'+
-    '<div class="sub-tab'+(ST.fashionTab==='list'?' active':'')+'" data-act="fashionTab" data-v="list">时装列表</div>'+
-    '<div class="sub-tab'+(ST.fashionTab==='frag'?' active':'')+'" data-act="fashionTab" data-v="frag">碎片仓库</div>'+
-  '</div>';
-  if(ST.fashionTab==='list'){
-    for(var i=0;i<FASHIONS.length;i++){
-      var f=FASHIONS[i];
-      var fc=ST.frag[f.id]||0;
-      var ready=fc>=f.frag;
-      html+='<div class="fashion-item">'+
-        '<div class="fashion-icon">'+(f.g==='male'?'🧑‍🦱':'👩')+'</div>'+
-        '<div class="fashion-info">'+
-          '<div class="fashion-name">'+f.name+'</div>'+
-          '<div class="fashion-desc">'+f.desc+'</div>'+
-          '<div class="fashion-bonus">+'+f.pb+' 战力</div>'+
-          '<div class="fashion-frag">碎片：'+fc+' / '+f.frag+'</div></div>'+
-        '<button class="synth-btn'+(ready?' ready':'')+'" data-act="synthFashion" data-id="'+f.id+'" '+(ready?'':' disabled')+'>'+(ready?'合成':'不足')+'</button></div>';
-    }
-    html+='<div style="font-size:12px;color:#666;padding:10px;line-height:1.6">💡 闯关有20%概率掉落时装碎片，收集足够碎片可合成时装，让宠物变成人形修仙者模样！</div>';
-  }else{
-    var has=false;
-    for(var id in ST.frag){
-      if(ST.frag[id]>0){
-        has=true;
-        var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===id){f=FASHIONS[i];break;}
-        if(f)html+='<div class="frag-item"><span>'+f.name+'碎片</span><span style="color:#9B59B6">×'+ST.frag[id]+' / '+f.frag+'</span></div>';
-      }
-    }
-    if(!has)html+='<div class="empty">还没有碎片，闯关有20%概率掉落！</div>';
-  }
-  return html;
-}
-
-// ===== SHOP =====
-function renderShop(){
-  var cats=[
-    {t:'egg',title:'🥚 扭蛋孵化',ids:['egg1','egg2','egg3']},
-    {t:'food',title:'🍖 宠物食物',ids:['food1','food2','food3','food4']},
-    {t:'clean',title:'🧹 清洁用品',ids:['clean1','clean2','clean3','clean4']},
-    {t:'toy',title:'🎾 宠物玩具',ids:['toy1','toy2','toy3']},
-    {t:'all',title:'🎁 全体道具',ids:['all1','all2','all3']}
-  ];
-  var html='';
-  for(var c=0;c<cats.length;c++){
-    var cat=cats[c];
-    html+='<div class="shop-cat"><div class="shop-title">'+cat.title+'</div>';
-    for(var i=0;i<SHOP.length;i++){
-      var s=SHOP[i];
-      if(cat.ids.indexOf(s.id)>-1){
-        html+='<div class="shop-item" data-act="buy" data-id="'+s.id+'">'+
-          '<div class="shop-name">'+s.name+'</div>'+
-          '<div class="shop-desc">'+s.desc+'</div>'+
-          '<div class="shop-price">💰 '+s.price+' PG</div></div>';
-      }
-    }
-    html+='</div>';
-  }
-  return html;
-}
-
-// ===== TASKS =====
-function renderTasks(){
-  var html='';
-  for(var i=0;i<ST.tasks.length;i++){
-    var t=ST.tasks[i];
-    html+='<div class="task-item">'+
-      '<div><div class="task-name">'+t.n+'</div><div class="task-desc">'+t.d+'</div><div class="task-reward">奖励：'+t.r+' PG</div></div>'+
-      '<button class="task-btn'+(t.c?' done':'')+'" data-act="claimTask" data-id="'+t.id+'" data-r="'+t.r+'"'+(t.c?' disabled':'')+'>'+(t.c?'已领':'领取')+'</button></div>';
-  }
-  return html;
-}
-
-// ===== CARE =====
-function renderCare(){
-  var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
-  if(!sel)return'<div class="empty">还没有宠物</div>';
-  var html='<div class="care-panel">'+
-    '<div class="care-header">'+
-      '<div class="care-img">'+sel.img+'</div>'+
-      '<div><div class="care-name">'+sel.name+'</div><div class="care-power">⚔️'+hp(sel)+' | Lv.'+(sel.level||1)+'</div></div></div>'+
-    '<div class="status-row"><span>🍗 饱食</span><div class="sbar"><div class="sfill fill-hunger" style="width:'+(sel.hunger||100)+'%"></div></div><span>'+(sel.hunger||100)+'%</span></div>'+
-    '<div class="status-row"><span>🧹 清洁</span><div class="sbar"><div class="sfill fill-clean" style="width:'+(sel.clean||100)+'%"></div></div><span>'+(sel.clean||100)+'%</span></div>'+
-    '<div class="status-row"><span>😊 心情</span><div class="sbar"><div class="sfill fill-happy" style="width:'+(sel.happy||100)+'%"></div></div><span>'+(sel.happy||100)+'%</span></div>'+
-    '<div class="care-btns">'+
-      '<button class="care-btn" data-act="careFeed">🍗 喂食</button>'+
-      '<button class="care-btn" data-act="careClean">🧹 清洁</button>'+
-      '<button class="care-btn" data-act="carePlay">🎾 玩耍</button></div></div>'+
-    '<div class="section-title" style="margin-top:12px">选择宠物</div>'+
-    '<div class="care-scroll">';
-  for(var i=0;i<ST.pets.length;i++){
-    var p=ST.pets[i];
-    html+='<div class="care-pet'+(sel&&sel.uid===p.uid?' sel':'')+'" data-act="selCare" data-uid="'+p.uid+'">'+
-      '<div style="font-size:28px">'+p.img+'</div><div>'+p.name+'</div></div>';
-  }
-  return html+'</div>';
-}
-
-// ===== EVENT ATTACHMENT (event delegation on #app) =====
-function attachEvents(){
-  var app=document.getElementById('app');
-  if(!app)return;
-
-  // One-time login buttons
-  var loginBtn=document.getElementById('loginBtn');
-  if(loginBtn){
-    loginBtn.onclick=function(){
-      ST.loggedIn=true;
-      ST.userName='训练师';
-      save();
-      render();
-    };
-  }
-  var guestBtn=document.getElementById('guestBtn');
-  if(guestBtn){
-    guestBtn.onclick=function(){
-      ST.loggedIn=true;
-      ST.userName='游客';
-      save();
-      render();
-    };
-  }
-
-  // Tab clicks
-  var tabs=document.querySelectorAll('.tab');
-  for(var i=0;i<tabs.length;i++){
-    tabs[i].onclick=(function(tab){
-      return function(){
-        ST.tab=tab;
-        if(ST.dungeonActive)return; // Don't switch tabs during battle
-        render();
-      };
-    })(tabs[i].dataset.tab);
-  }
-
-  // Hatch button
-  var hatchBtn=document.getElementById('hatchBtn');
-  if(hatchBtn){
-    hatchBtn.onclick=function(){
-      if(ST.pg<100){showAlert('PG币不足！');return;}
-      ST.pg-=100;
-      var r=rr();
-      var pet=mkPet(r);
-      pet.rarity=r;
-      ST.pets.push(pet);
-      save();
-      updateHeader();
-      hatchBtn.classList.add('shaking');
-      setTimeout(function(){
-        hatchBtn.classList.remove('shaking');
-        _resultPet=pet;
-        showResult(pet);
-      },400);
-    };
-  }
-
-  // Start dungeon
-  var startBtn=document.getElementById('startBtn');
-  if(startBtn){
-    startBtn.onclick=function(){
-      if(!ST.dungeonPet){showAlert('请先选择出战宠物');return;}
-      var pet;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===ST.dungeonPet){pet=ST.pets[i];break;}
-      if(!pet){showAlert('宠物不存在');return;}
-      if((pet.hunger||100)<20){showAlert('宠物太饿了，先喂食！');return;}
-      _pet=pet;
-      _power=hp(pet);
-      _waves=getWaves(ST.stage);
-      _waveIdx=0;
-      _zombies=JSON.parse(JSON.stringify(_waves[0]));
-      _skillCd=0;
-      _dungeonLog=['第'+ST.stage+'关 - 波次1/'+_waves.length];
-      ST.dungeonActive=true;
-      ST.petHp=100+Math.floor(_power*0.5);
-      ST.petMaxHp=100+Math.floor(_power*0.5);
-      ST.petX=40;
-      ST.petY=100;
-      save();
-      render();
-      _atkTimer=setInterval(dungeonAttack,1500);
-      _zTimer=setInterval(zombieMove,2000);
-    };
-  }
-
-  // Skill button
-  var skillBtn=document.getElementById('skillBtn');
-  if(skillBtn){
-    skillBtn.onclick=function(){
-      if(_skillCd>0||!ST.dungeonActive)return;
-      var pet=_pet;
-      var dmg=Math.floor(_power*pet.skillDmg*(0.8+Math.random()*0.4));
-      _zombies=_zombies.map(function(z){
-        if(z.dead)return z;
-        var nh=z.hp-dmg;
-        return{hp:nh<=0?0:nh,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:nh<=0?false:true,dead:nh<=0};
-      });
-      _dungeonLog.push(pet.name+' 释放 '+pet.skill+'！全屏 -'+dmg+'！');
-      ST.petX=120;
-      _skillCd=5;
-      render();
-      var cd=setInterval(function(){
-        _skillCd--;
-        var btn=document.getElementById('skillBtn');
-        if(btn)btn.textContent=_skillCd>0?'⏳ 冷却'+_skillCd+'s':'🔥 '+pet.skill;
-        if(_skillCd<=0&&btn){btn.disabled=false;btn.textContent='🔥 '+pet.skill;}
-        if(_skillCd<=0)clearInterval(cd);
-      },1000);
-      setTimeout(function(){ST.petX=40;render();},300);
-      setTimeout(function(){
-        _zombies=_zombies.map(function(z){return{hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:false,dead:z.dead};});
-        render();
-      },350);
-      setTimeout(checkWave,600);
-    };
-  }
-
-  // Close reward
-  var closeReward=document.getElementById('closeReward');
-  if(closeReward){
-    closeReward.onclick=function(){
-      _reward=null;
-      render();
-    };
-  }
-
-  // All other actions via delegation
-  app.onclick=function(e){
-    var el=e.target;
-    while(el&&el!==app&&!el.dataset.act)el=el.parentElement;
-    if(!el||!el.dataset.act)return;
-    var act=el.dataset.act;
-    var uid=el.dataset.uid;
-    var slot=el.dataset.slot;
-    var fid=el.dataset.id;
-    var vid=el.dataset.v;
-    var rid=el.dataset.id;
-    var rr=el.dataset.r;
-
-    switch(act){
-      case'filter':ST.filter=vid;render();break;
-      case'petDetail':
-        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){p=ST.pets[i];break;}
-        if(p)showAlert(p.name+'\n'+RARITY[p.rarity].t+' | '+p.profession+'\n战力：'+hp(p)+'\n技能：'+p.skill+'\nLv.'+(p.level||1));
-        break;
-      case'selDungeon':ST.dungeonPet=uid;render();break;
-      case'equipTab':ST.equipTab=vid;render();break;
-      case'equipItem':
-        var eq;for(var i=0;i<ST.equip.length;i++)if(ST.equip[i].uid===uid){eq=ST.equip[i];break;}
-        if(!eq)break;
-        if(!ST.pets.length){showAlert('没有宠物');break;}
-        showSelectPet('选择装备到哪个宠物',function(petIdx){
-          ST.equip=ST.equip.filter(function(e){return e.uid!==uid;});
-          ST.pets[petIdx].equip=ST.pets[petIdx].equip||{weapon:null,armor:null,accessory:null};
-          ST.pets[petIdx].equip[eq.slot]=eq;
-          save();
-          render();
-          showAlert('装备成功！');
-        });
-        break;
-      case'unequip':
-        var pet;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){pet=ST.pets[i];break;}
-        if(!pet||!pet.equip||!pet.equip[slot])break;
-        ST.equip.push(pet.equip[slot]);
-        pet.equip[slot]=null;
-        save();
-        render();
-        break;
-      case'fashionTab':ST.fashionTab=vid;render();break;
-      case'synthFashion':
-        var f;for(var i=0;i<FASHIONS.length;i++)if(FASHIONS[i].id===fid){f=FASHIONS[i];break;}
-        if(!f)break;
-        if((ST.frag[fid]||0)<f.frag){showAlert('碎片不足');break;}
-        if(!ST.pets.length){showAlert('没有宠物');break;}
-        showSelectPet('选择穿上时装的宠物',function(petIdx){
-          ST.frag[fid]=(ST.frag[fid]||0)-f.frag;
-          ST.pets[petIdx].fashion=fid;
-          if(ST.fash.indexOf(fid)===-1)ST.fash.push(fid);
-          save();
-          render();
-          showAlert('时装合成成功！');
-        });
-        break;
-      case'buy':
-        var item;for(var i=0;i<SHOP.length;i++)if(SHOP[i].id===fid){item=SHOP[i];break;}
-        if(!item)break;
-        if(ST.pg<item.price){showAlert('PG币不足！');break;}
-        ST.pg-=item.price;
-        save();
-        if(item.type==='egg'){
-          var r=item.rarity||rr();
-          var pet=mkPet(r);pet.rarity=r;
-          ST.pets.push(pet);
-          save();
-          updateHeader();
-          _resultPet=pet;
-          showResult(pet);
-        }else if(item.type==='food'||item.type==='clean'||item.type==='toy'){
-          if(!ST.pets.length){ST.pg+=item.price;save();showAlert('没有宠物');render();break;}
-          showSelectPet('选择宠物',function(petIdx){
-            var p=ST.pets[petIdx];
-            if(item.type==='food'){
-              p.hunger=Math.min(100,(p.hunger||100)+(item.h||0));
-              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
-            }else if(item.type==='clean'){
-              p.clean=Math.min(100,(p.clean||100)+(item.c||0));
-              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
-            }else if(item.type==='toy'){
-              p.happy=Math.min(100,(p.happy||100)+(item.hp||0));
+        // ===== V2.0 帮助函数 =====
+        function uid2() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+        function calcPower(pet) {
+            var p = pet.power || 0;
+            if (pet.equip) SLOTS.forEach(function(s) { if (pet.equip[s]) p += pet.equip[s].b || 0; });
+            if (pet.fashion) {
+                var f = FASHIONS.find(function(x) { return x.id === pet.fashion; });
+                if (f) p += f.pb || 0;
             }
-            save();
-            render();
-            showAlert('使用成功！');
-          });
-        }else if(item.type==='all'){
-          ST.pets=ST.pets.map(function(p){
-            var hp2=p.hunger||100,cl=p.clean||100,ha=p.happy||100;
-            if(item.ah)hp2=Math.min(100,hp2+item.ah);
-            if(item.ac)cl=Math.min(100,cl+item.ac);
-            if(item.ahp)ha=Math.min(100,ha+item.ahp);
-            return{hunger:hp2,clean:cl,happy:ha,power:p.power,name:p.name,uid:p.uid,img:p.img,rarity:p.rarity,profession:p.profession,skill:p.skill,skillDmg:p.skillDmg,level:p.level,equip:p.equip,fashion:p.fashion,basePower:p.basePower,id:p.id};
-          });
-          save();
-          render();
-          showAlert('使用成功！');
+            p = Math.floor(p * (1 + ((pet.happy || 100) - 50) * 0.004));
+            return p;
         }
-        break;
-      case'claimTask':
-        var tid=parseInt(rid);
-        var t;for(var i=0;i<ST.tasks.length;i++)if(ST.tasks[i].id===tid){t=ST.tasks[i];break;}
-        if(!t||t.c)break;
-        t.c=true;
-        ST.pg+=parseInt(rr)||t.r;
-        save();
-        updateHeader();
-        render();
-        showAlert('领取成功！+'+t.r+' PG');
-        break;
-      case'careFeed':
-        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
-        if(!sel)break;
-        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
-        if(!p)break;
-        p.hunger=Math.min(100,(p.hunger||100)+30);
-        ST.selectedCare=p;
-        save();
-        render();
-        break;
-      case'careClean':
-        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
-        if(!sel)break;
-        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
-        if(!p)break;
-        p.clean=Math.min(100,(p.clean||100)+30);
-        ST.selectedCare=p;
-        save();
-        render();
-        break;
-      case'carePlay':
-        var sel=ST.selectedCare||(ST.pets.length?ST.pets[0]:null);
-        if(!sel)break;
-        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===sel.uid){p=ST.pets[i];break;}
-        if(!p)break;
-        p.happy=Math.min(100,(p.happy||100)+30);
-        ST.selectedCare=p;
-        save();
-        render();
-        break;
-      case'selCare':
-        var p;for(var i=0;i<ST.pets.length;i++)if(ST.pets[i].uid===uid){p=ST.pets[i];break;}
-        if(p){ST.selectedCare=p;render();}
-        break;
+        function getWaves(stage) {
+            var waves = [];
+            var count = Math.min(3, 1 + Math.floor(stage / 5));
+            for (var w = 0; w < count; w++) {
+                var wave = [];
+                var num = 2 + Math.floor(stage / 3) + w;
+                for (var i = 0; i < num; i++) {
+                    var zi = stage < 3 ? 0 : stage < 6 ? Math.floor(Math.random() * 2) : stage < 10 ? Math.floor(Math.random() * 4) : Math.floor(Math.random() * 5);
+                    if (stage % 5 === 0 && stage > 0 && w === count - 1 && i === num - 1) zi = 5;
+                    var z = ZOMBIE[zi];
+                    var hpM = 1 + (stage - 1) * 0.3;
+                    var atkM = 1 + (stage - 1) * 0.2;
+                    wave.push({
+                        uid: uid2(), name: z.name, hp: Math.floor(z.hp * hpM), maxHp: Math.floor(z.hp * hpM),
+                        atk: Math.floor(z.atk * atkM), spd: z.spd,
+                        x: 200 + i * 28, y: 50 + (i % 3) * 55, hit: false, dead: false
+                    });
+                }
+                waves.push(wave);
+            }
+            return waves;
+        }
+        function dropEquip(stage) {
+            var bonus = Math.min(stage * 2, 30);
+            var roll = Math.random() * 100, acc = 0, ti = 0;
+            for (var i = 0; i < ETIERS.length; i++) {
+                var rate = i < 2 ? ETIERS[i].r - bonus / 2 : i < 3 ? ETIERS[i].r + bonus / 4 : i < 4 ? ETIERS[i].r + bonus / 4 : ETIERS[i].r + bonus / 6;
+                acc += Math.max(rate, 1);
+                if (roll < acc) { ti = i; break; }
+            }
+            var t = ETIERS[ti], slot = SLOTS[Math.floor(Math.random() * 3)];
+            return { uid: uid2(), name: PREFIXES[slot][ti], slot: slot, t: t.t, n: t.n, c: t.c, b: t.b + Math.floor(Math.random() * t.b * 0.3), stage: stage };
+        }
+        function loadDungeonState() {
+            try {
+                var d = JSON.parse(localStorage.getItem('bc2_dungeon') || 'null');
+                if (d) { dungeonState.stage = d.stage || 1; dungeonState.equip = d.equip || []; dungeonState.frag = d.frag || {}; dungeonState.fash = d.fash || []; }
+            } catch (e) {}
+        }
+        function saveDungeonState() {
+            try { localStorage.setItem('bc2_dungeon', JSON.stringify({ stage: dungeonState.stage, equip: dungeonState.equip, frag: dungeonState.frag, fash: dungeonState.fash })); } catch (e) {}
+        }
+        loadDungeonState();
+        // 孵化配置
+        const hatchConfig = {
+            'G0': { costPG: 500, cooldown: 7, maxHatch: 10, outcomes: [{ rarity: 'S', prob: 0.2 }, { rarity: 'G2', prob: 0.8 }] },
+            'S+': { costPG: 300, cooldown: 5, maxHatch: 20, outcomes: [{ rarity: 'G2', prob: 1.0 }] },
+            'S':  { costPG: 200, cooldown: 3, maxHatch: 30, outcomes: [{ rarity: 'G3', prob: 0.95 }, { rarity: 'G2', prob: 0.05 }] },
+            'G2': { costPG: 200, cooldown: 3, maxHatch: 30, outcomes: [{ rarity: 'G3', prob: 0.95 }, { rarity: 'G2', prob: 0.05 }] },
+            'G3': { costPG: 0, cooldown: 0, maxHatch: 0, outcomes: [] }, // 不能孵化
+        };
+
+        // 游戏数据
+        let gameData = {
+            pg: 10000,
+            pets: [],
+            username: '',
+            isLoggedIn: false,
+            registeredAt: 0,
+            totalHatched: 0,    // 历史累计孵化次数（做任务用）
+            totalLoginDays: 0,  // 历史累计登录天数
+            lastLoginDate: ''   // 上次登录日期
+        };
+
+        // 当前选中的宠物
+        let selectedPet = null;
+        let currentFilter = 'all';
+
+        // 初始化
+        function init() {
+            // 读取主存档（恢复登录状态和游戏数据）
+            const saved = localStorage.getItem('petPlanetData');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    gameData.pg = typeof parsed.pg === 'number' ? parsed.pg : 10000;
+                    gameData.pets = Array.isArray(parsed.pets) ? parsed.pets : [];
+                    gameData.username = parsed.username || '';
+                    gameData.isLoggedIn = parsed.isLoggedIn === true;
+                    gameData.registeredAt = parsed.registeredAt || 0;
+                    gameData.totalHatched = typeof parsed.totalHatched === 'number' ? parsed.totalHatched : 0;
+                    gameData.totalLoginDays = typeof parsed.totalLoginDays === 'number' ? parsed.totalLoginDays : 0;
+                    gameData.lastLoginDate = parsed.lastLoginDate || '';
+                } catch(e) {
+                    console.error('存档读取失败，使用默认数据:', e);
+                    gameData.pets = [
+                        Object.assign({}, genesisPets[0], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                        Object.assign({}, genesisPets[1], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0}),
+                        Object.assign({}, petDatabase[0], {uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0})
+                    ];
+                }
+            } else {
+                // 无存档则给初始宠物（方便测试）
+                gameData.pets = [
+                    Object.assign({}, genesisPets[0], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, genesisPets[1], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, petDatabase[0], {uid: Date.now() + 2, hatchCount: 0, lastHatchTime: 0})
+                ];
+            }
+            // 更新登录天数
+            const today = new Date().toDateString();
+            if (gameData.lastLoginDate && gameData.lastLoginDate !== today) {
+                gameData.totalLoginDays += 1;
+            }
+            gameData.lastLoginDate = today;
+            saveGame();
+            updateBalances();
+            updateUserStatus();
+            initPetStatus();
+            decayPetStatus();
+            setInterval(decayPetStatus, 60000); // Decay every minute
+            showTab('collection');
+        }
+
+        // 任务数据
+        const tasks = [
+            { id: 'checkin', name: '每日签到', desc: '每天签到领取奖励', reward: 50, type: 'daily' },
+            { id: 'hatch1', name: '初次孵化', desc: '累计孵化1次', reward: 30, type: 'once', target: 1, check: () => gameData.totalHatched >= 1 },
+            { id: 'hatch5', name: '孵化达人', desc: '累计孵化5次', reward: 100, type: 'once', target: 5, check: () => gameData.totalHatched >= 5 },
+            { id: 'hatch10', name: '孵化大师', desc: '累计孵化10次', reward: 200, type: 'once', target: 10, check: () => gameData.totalHatched >= 10 },
+            { id: 'pet3', name: '宠物收藏家', desc: '拥有3只宠物', reward: 50, type: 'once', target: 3, check: () => gameData.pets.length >= 3 },
+            { id: 'pet6', name: '宠物大亨', desc: '拥有6只宠物', reward: 100, type: 'once', target: 6, check: () => gameData.pets.length >= 6 },
+            { id: 'pet10', name: '宠物王国', desc: '拥有10只宠物', reward: 300, type: 'once', target: 10, check: () => gameData.pets.length >= 10 },
+        ];
+
+        // 显示任务系统
+        function showTasks(content) {
+            let html = '<h2>📋 任务中心</h2>';
+            html += '<p style="color:#666;margin:10px 0;">完成任务获得 PG 币奖励！</p>';
+            html += '<div style="max-width:600px;margin:0 auto;">';
+
+            tasks.forEach(task => {
+                const claimedKey = 'taskClaimed_' + task.id;
+                const lastClaim = localStorage.getItem(claimedKey);
+                const today = new Date().toDateString();
+                const isDaily = task.type === 'daily';
+                const alreadyClaimed = isDaily ? (lastClaim === today) : (lastClaim === 'done');
+                const completed = isDaily ? true : (task.check ? task.check() : false);
+                const canClaim = completed && !alreadyClaimed;
+
+                // 每日签到特殊处理
+                if (isDaily) {
+                    const btnStyle = alreadyClaimed
+                        ? 'background:#95a5a6;color:white;cursor:default;'
+                        : 'background:#e74c3c;color:white;cursor:pointer;font-size:15px;padding:10px 25px;';
+                    html += `
+                        <div style="background:linear-gradient(135deg,#ffeaa7,#fdcb6e);padding:20px;border-radius:12px;margin-bottom:15px;text-align:center;border:2px solid #f39c12;">
+                            <div style="font-weight:bold;font-size:18px;color:#d63031;">✋ ${task.name}</div>
+                            <div style="font-size:13px;color:#666;margin-top:5px;">${task.desc}</div>
+                            <div style="font-size:14px;color:#e74c3c;margin-top:8px;font-weight:bold;">🎁 签到奖励：+${task.reward} PG</div>
+                            <button onclick="doCheckin(50)" style="border:none;border-radius:25px;padding:10px 30px;font-size:16px;${btnStyle}" ${alreadyClaimed?'disabled':''}>
+                                ${alreadyClaimed ? '✅ 今日已签到' : '👆 点击签到'}
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 成就任务
+                const btnStyle = alreadyClaimed
+                    ? 'background:#95a5a6;color:white;cursor:default;'
+                    : completed
+                    ? 'background:#2ecc71;color:white;cursor:pointer;'
+                    : 'background:#667eea;color:white;cursor:not-allowed;';
+                html += `
+                    <div style="background:${completed?'#d5f5e3':'#f8f9fa'};padding:15px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:bold;font-size:15px;">${task.name}</div>
+                            <div style="font-size:12px;color:#666;margin-top:3px;">${task.desc}</div>
+                            <div style="font-size:12px;color:#667eea;margin-top:3px;">🎁 奖励：${task.reward} PG</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:11px;background:#dfe6e9;color:#636e72;padding:2px 8px;border-radius:5px;">成就</span>
+                            <button onclick="claimTask(task.id,task.reward,completed)" style="border:none;border-radius:5px;padding:8px 15px;font-size:13px;${btnStyle}" ${canClaim?'':'disabled'}>
+                                ${alreadyClaimed ? '🔔 已领取' : completed ? '🎁 领取' : '🔒 未完成'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            html += '<div style="text-align:center;margin-top:15px;">';
+            html += '<button onclick="resetTaskClaims()" style="background:#e74c3c;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;">🔄 重置领取记录</button>';
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        // 领取任务奖励
+        function claimTask(taskId, reward, completed) {
+            if (!completed) { alert('未满足条件！'); return; }
+            // 检查是否已领取（用localStorage记录）
+            const claimedKey = 'taskClaimed_' + taskId;
+            const lastClaim = localStorage.getItem(claimedKey);
+            const today = new Date().toDateString();
+            const task = tasks.find(t => t.id === taskId);
+            if (task.type === 'daily') {
+                if (lastClaim === today) { alert('今日已领取！'); return; }
+            } else {
+                if (lastClaim === 'done') { alert('已领取过该成就奖励！'); return; }
+            }
+            gameData.pg += reward;
+            localStorage.setItem(claimedKey, task.type === 'daily' ? today : 'done');
+            updateBalances();
+            saveGame();
+            alert('🎉 领取成功！+' + reward + ' PG');
+            showTasks(document.getElementById('content'));
+        }
+
+        // 重置任务领取记录（同时扣回已领取奖励）
+        function resetTaskClaims() {
+            let totalDeduct = 0;
+            const today = new Date().toDateString();
+            tasks.forEach(task => {
+                const key = 'taskClaimed_' + task.id;
+                const lastClaim = localStorage.getItem(key);
+                if (lastClaim) {
+                    totalDeduct += task.reward;
+                    localStorage.removeItem(key);
+                }
+            });
+            if (totalDeduct === 0) { alert('没有可重置的记录。'); return; }
+            if (!confirm('重置将扣回已领取的 ' + totalDeduct + ' PG，确定吗？')) return;
+            gameData.pg = Math.max(0, gameData.pg - totalDeduct);
+            updateBalances();
+            saveGame();
+            alert('⚠️ 已重置！扣回 ' + totalDeduct + ' PG，当前 PG：' + gameData.pg);
+            showTasks(document.getElementById('content'));
+        }
+
+        // 每日签到（直接到账）
+        function doCheckin(reward) {
+            const today = new Date().toDateString();
+            const claimedKey = 'taskClaimed_checkin';
+            const lastClaim = localStorage.getItem(claimedKey);
+            if (lastClaim === today) { alert('今日已签到！'); return; }
+            gameData.pg += reward;
+            gameData.totalLoginDays = (gameData.totalLoginDays || 0) + 1;
+            localStorage.setItem(claimedKey, today);
+            updateBalances();
+            saveGame();
+            alert('🎉 签到成功！+' + reward + ' PG \n连续签到 ' + gameData.totalLoginDays + ' 天');
+            showTasks(document.getElementById('content'));
+        }
+        function saveGame() {
+            const dataToSave = {
+                pg: gameData.pg,
+                pets: gameData.pets,
+                username: gameData.username || '',
+                isLoggedIn: gameData.isLoggedIn || false,
+                registeredAt: gameData.registeredAt || 0,
+                totalHatched: gameData.totalHatched || 0,
+                totalLoginDays: gameData.totalLoginDays || 0,
+                lastLoginDate: gameData.lastLoginDate || ''
+            };
+            localStorage.setItem('petPlanetData', JSON.stringify(dataToSave));
+        }
+
+        // 切换标签页
+        function showTab(tab, evt) {
+        console.log('[DEBUG] showTab:', tab);
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (evt && evt.target && evt.target.classList) evt.target.classList.add('active');
+            selectedPet = null;
+            const content = document.getElementById('content');
+            switch(tab) {
+                case 'collection': showCollection(content); break;
+                case 'hatch': showHatch(content); break;
+                case 'tasks': showTasks(content); break;
+                case 'battle': showBattle(content); break;
+                case 'shop': showShop(content); break;
+            case 'care':
+                    showCareTab();
+                    break;
+                case 'synth':
+                    showTabSynth();
+                    break;
+                case 'chat': showChat(content); break;
+                case 'dungeon': showDungeon(content); break;
+                case 'equip': showEquip(content); break;
+                case 'fashion': showFashion(content); break;
+            }
+        }
+
+        // 显示宠物收藏
+        function showCollection(content) {
+            const stats = getStats();
+            let html = `<h2>🎒 我的宠物 (${gameData.pets.length} 只)</h2>`;
+            
+            // 筛选标签
+            html += '<div style="display:flex;gap:5px;margin:15px 0;flex-wrap:wrap;">';
+            html += `<button class="tab ${currentFilter==='all'?'active':''}" onclick="setFilter('all')" style="padding:8px 15px;font-size:13px;">全部</button>`;
+            html += `<button class="tab ${currentFilter==='G0'?'active':''}" onclick="setFilter('G0')" style="padding:8px 15px;font-size:13px;background:${currentFilter==='G0'?'#FFD700':'white'};color:${currentFilter==='G0'?'#000':'#333'};">🆄 创世</button>`;
+            html += `<button class="tab ${currentFilter==='S+'?'active':''}" onclick="setFilter('S+')" style="padding:8px 15px;font-size:13px;background:${currentFilter==='S+'?'#FF00FF':'white'};color:${currentFilter==='S+'?'#fff':'#333'};">🅢🅢 至尊</button>`;
+            html += `<button class="tab ${currentFilter==='S'?'active':''}" onclick="setFilter('S')" style="padding:8px 15px;font-size:13px;background:${currentFilter==='S'?'#9B59B6':'white'};color:${currentFilter==='S'?'#fff':'#333'};">🅢 传说</button>`;
+            html += `<button class="tab ${currentFilter==='G2'?'active':''}" onclick="setFilter('G2')" style="padding:8px 15px;font-size:13px;background:${currentFilter==='G2'?'#3498DB':'white'};color:${currentFilter==='G2'?'#fff':'#333'};">🄶🄶 第二代</button>`;
+            html += `<button class="tab ${currentFilter==='G3'?'active':''}" onclick="setFilter('G3')" style="padding:8px 15px;font-size:13px;background:${currentFilter==='G3'?'#2ECC71':'white'};color:${currentFilter==='G3'?'#fff':'#333'};">🄶🄶 第三代</button>`;
+            html += '</div>';
+            
+            // 统计
+            html += `<div style="margin:10px 0;font-size:14px;color:#666;">`;
+            html += `创世 ${stats.G0} | 至尊 ${stats['S+']} | 传说 ${stats.S} | 第二代 ${stats.G2} | 第三代 ${stats.G3}`;
+            html += ` | 总战力 ⚡${stats.totalPower}`;
+            html += '</div>';
+            
+            // 筛选宠物
+            const filteredPets = currentFilter === 'all' ? gameData.pets : gameData.pets.filter(p => p.rarity === currentFilter);
+            
+            if (filteredPets.length === 0) {
+                html += '<div style="text-align:center;padding:50px;color:#999;">';
+                html += '<p style="font-size:48px;">🐾</p>';
+                html += '<p>没有找到该类型的宠物</p>';
+                html += '</div>';
+            } else {
+                html += '<div class="pet-grid">';
+                filteredPets.forEach((pet, idx) => {
+                    const rarityClass = 'rarity-' + pet.rarity;
+                    html += `
+                        <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(pet.uid)">
+                            <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
+                            <div class="pet-name">${pet.name}</div>
+                            <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
+                            <div class="pet-power">⚡${pet.power}</div>
+                            <div class="pet-hatch-count">孵化 ${pet.hatchCount || 0} 次</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            content.innerHTML = html;
+        }
+
+        // 设置筛选
+        function setFilter(filter) {
+            currentFilter = filter;
+            const content = document.getElementById('content');
+            showCollection(content);
+        }
+
+        // 通过UID显示宠物详情
+        function showPetDetailByUid(uid) {
+            const idx = gameData.pets.findIndex(p => p.uid === uid);
+            if (idx >= 0) showPetDetail(idx);
+        }
+
+        // 获取宠物统计
+        function getStats() {
+            const stats = { G0: 0, 'S+': 0, S: 0, G2: 0, G3: 0, totalPower: 0 };
+            gameData.pets.forEach(p => {
+                stats[p.rarity] = (stats[p.rarity] || 0) + 1;
+                stats.totalPower += p.power;
+            });
+            return stats;
+        }
+
+        // 从收藏页选择宠物去孵化
+        function selectPetForHatch(idx) {
+            // 先切换到孵化页并高亮这只宠物
+            showTab('hatch');
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.hatch-pet-card');
+                if (cards[idx]) {
+                    cards.forEach(c => c.classList.remove('selected'));
+                    cards[idx].classList.add('selected');
+                    selectedPet = gameData.pets[idx];
+                    updateHatchButton();
+                    // 滚动到宠物区域
+                    document.querySelector('.hatch-area').scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }
+
+        // 显示孵化系统
+        function showHatch(content) {
+            let html = '<div class="hatch-area">';
+            html += '<h2>🥚 孵化系统</h2>';
+            html += '<div class="rarity-legend" style="margin:15px 0;">';
+            html += '<span style="font-size:12px;color:#999;">点击「我的宠物」里的任意宠物，即可带到此处孵化</span>';
+            html += '</div>';
+            
+            // 提示框
+            html += '<div class="hint-box">';
+            html += '<h3>📖 孵化规则</h3>';
+            html += '<table style="width:100%;font-size:13px;margin-top:10px;border-collapse:collapse;">';
+            html += '<tr><th>宠物</th><th>费用</th><th>冷却</th><th>产出</th><th>最大次数</th></tr>';
+            html += '<tr><td>🆄 创世(G0)</td><td>500 PG</td><td>7天</td><td>10% 至尊 + 20% 传说 + 70% 第二代</td><td>10次</td></tr>';
+            html += '<tr><td>🅢🅢 至尊(S+)</td><td>300 PG</td><td>5天</td><td>100% 第二代</td><td>20次</td></tr>';
+            html += '<tr><td>🅢 传说(S)</td><td>200 PG</td><td>3天</td><td>5% 第二代 + 95% 第三代</td><td>30次</td></tr>';
+            html += '<tr><td>🄶🄶 第二代(G2)</td><td>200 PG</td><td>3天</td><td>5% 第二代 + 95% 第三代</td><td>30次</td></tr>';
+            html += '<tr><td>🄶🄶 第三代(G3)</td><td colspan=4>❌ 不能孵化</td></tr>';
+            html += '</table>';
+            html += '</div>';
+            
+            // 选择宠物区域
+            html += '<div style="margin:20px 0;"><h3>选择宠物进行孵化：</h3></div>';
+            html += '<div class="pet-grid" id="hatchPetGrid">';
+            
+            gameData.pets.forEach((pet, idx) => {
+                const config = hatchConfig[pet.rarity] || {};
+                const canHatch = config.costPG > 0;
+                const hatchCount = pet.hatchCount || 0;
+                const maxHatch = config.maxHatch || 0;
+                const remaining = maxHatch - hatchCount;
+                const cooldownOk = Date.now() - (pet.lastHatchTime || 0) >= (config.cooldown || 0) * 86400000;
+                
+                const rarityClass = 'rarity-' + pet.rarity;
+                const disabled = !canHatch || remaining <= 0 || !cooldownOk;
+                
+                html += `
+                    <div class="pet-card ${rarityClass} hatch-pet-card" 
+                         onclick="selectThisPet(idx, event)"
+                         style="${disabled ? 'opacity:0.5;' : 'cursor:pointer;'}">
+                        <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
+                        <div class="pet-name">${pet.name}</div>
+                        <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
+                        <div class="pet-power">⚡${pet.power}</div>
+                        <div class="pet-hatch-count">
+                            ${!canHatch ? '❌不能孵化' : 
+                              remaining <= 0 ? '⚠️已达上限' : 
+                              !cooldownOk ? `⏰冷却中` : 
+                              `剩余 ${remaining}/${maxHatch} 次`}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // 孵化按钮
+            html += '<div style="margin:30px 0;text-align:center;">';
+            html += '<button id="hatchBtn" class="btn btn-gold hatch-btn" onclick="doHatch()" disabled>选择上方一只宠物开始孵化</button>';
+            html += '<div id="hatchInfo" style="margin-top:15px;font-size:14px;color:#666;"></div>';
+            html += '</div>';
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        // 选择宠物（从孵化页面选择）
+        function selectThisPet(idx, evt) {
+            selectedPet = gameData.pets[idx];
+            document.querySelectorAll('.hatch-pet-card').forEach(c => c.classList.remove('selected'));
+            if (evt && evt.target && evt.target.closest) {
+                evt.target.closest('.hatch-pet-card').classList.add('selected');
+            } else {
+                var cards = document.querySelectorAll('.hatch-pet-card');
+                if (cards[idx]) cards[idx].classList.add('selected');
+            }
+            updateHatchButton();
+        }
+
+        // 更新孵化按钮状态
+        function updateHatchButton() {
+            const btn = document.getElementById('hatchBtn');
+            const info = document.getElementById('hatchInfo');
+            if (!btn || !selectedPet) return;
+            
+            const config = hatchConfig[selectedPet.rarity];
+            const hatchCount = selectedPet.hatchCount || 0;
+            const remaining = (config.maxHatch || 0) - hatchCount;
+            
+            if (selectedPet.rarity === 'G3') {
+                btn.disabled = true;
+                btn.textContent = '第三代宠物不能孵化';
+                return;
+            }
+            
+            if (remaining <= 0) {
+                btn.disabled = true;
+                btn.textContent = '已达孵化上限';
+                return;
+            }
+            
+            const cooldownMs = config.cooldown * 86400000;
+            const elapsed = Date.now() - (selectedPet.lastHatchTime || 0);
+            if (elapsed < cooldownMs) {
+                const remainingMs = cooldownMs - elapsed;
+                const days = Math.ceil(remainingMs / 86400000);
+                btn.disabled = true;
+                btn.textContent = `冷却中 (${days}天后可用)`;
+                return;
+            }
+            
+            btn.disabled = gameData.pg < config.costPG;
+            btn.textContent = `开始孵化（消耗 ${config.costPG} PG）`;
+            
+            // 显示孵化信息
+            if (info) {
+                info.innerHTML = `选择的宠物：<strong>${selectedPet.name}</strong> (${selectedPet.rarity})<br>`;
+                info.innerHTML += `剩余孵化次数：<strong>${remaining}</strong> 次<br>`;
+                if (selectedPet.rarity === 'G0') {
+                    info.innerHTML += `🎯 10% 概率出至尊宠物<br>✅ 20% 概率出传说宠物<br>✅ 70% 概率出第二代宠物`;
+                } else if (selectedPet.rarity === 'G2') {
+                    info.innerHTML += `🎯 5% 概率出第二代宠物<br>✅ 95% 概率出第三代宠物`;
+                }
+            }
+        }
+
+        // 执行孵化
+        function doHatch() {
+            if (!selectedPet) return;
+            const config = hatchConfig[selectedPet.rarity];
+            
+            if (gameData.pg < config.costPG) {
+                alert('PG币不足！需要 ' + config.costPG + ' PG');
+                return;
+            }
+            
+            gameData.pg -= config.costPG;
+            
+            // 更新宠物孵化次数
+            selectedPet.hatchCount = (selectedPet.hatchCount || 0) + 1;
+            selectedPet.lastHatchTime = Date.now();
+            
+            // 生成后代
+            const roll = Math.random();
+            let child;
+            let resultType = '';
+            
+            if (selectedPet.rarity === 'G0') {
+                if (roll < 0.1) {
+                    // 10% 概率产出至尊宠物（S+级）
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.name = '至尊·' + child.name;
+                    child.rarity = 'S+';
+                    child.power = 2400 + Math.floor(Math.random() * 300);
+                    resultType = 'supreme';
+                } else if (roll < 0.3) {
+                    // 20% 概率产出传说宠物（S级）
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.name = '传说·' + child.name;
+                    child.rarity = 'S';
+                    child.power = 1700 + Math.floor(Math.random() * 400);
+                    resultType = 'legendary';
+                } else {
+                    // 70% 概率产出第二代宠物（G2）
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.rarity = 'G2';
+                    child.power = 1000 + Math.floor(Math.random() * 600);
+                    resultType = 'g2';
+                }
+            } else if (selectedPet.rarity === 'S+' || selectedPet.rarity === 'S') {
+                if (roll < 0.05 && selectedPet.rarity === 'S') {
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.name = '传说·' + child.name;
+                    child.rarity = 'S';
+                    child.power = 1700 + Math.floor(Math.random() * 400);
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.rarity = 'G3';
+                    child.power = 750 + Math.floor(Math.random() * 450);
+                    resultType = 'g3';
+                }
+            } else if (selectedPet.rarity === 'G2') {
+                if (roll < 0.05) {
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * 6)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.name = '传说·' + child.name;
+                    child.rarity = 'S';
+                    child.power = 1600 + Math.floor(Math.random() * 300);
+                    resultType = 'legendary';
+                } else {
+                    child = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                    child.rarity = 'G3';
+                    child.power = 750 + Math.floor(Math.random() * 450);
+                    resultType = 'g3';
+                }
+            }
+            
+            gameData.pets.push(child);
+            gameData.totalHatched += 1;
+            updateBalances();
+            saveGame();
+            showResult(child, resultType);
+            
+            // 更新按钮状态
+            selectedPet = gameData.pets.find(p => p.uid === selectedPet.uid);
+            updateHatchButton();
+        }
+
+        // 显示结果弹窗
+        function showResult(pet, resultType) {
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('resultTitle');
+            const img = document.getElementById('resultImage');
+            const info = document.getElementById('resultInfo');
+            
+            if (resultType === 'supreme') {
+                title.textContent = '🎉🎉 天呐！孵化出至尊宠物！';
+                title.style.color = '#FF00FF';
+            } else if (resultType === 'legendary') {
+                title.textContent = '🌟 恭喜！孵化出传说宠物！';
+                title.style.color = '#9B59B6';
+            } else if (resultType === 'g2') {
+                title.textContent = '🎉 孵化成功！获得第二代宠物';
+                title.style.color = '#3498DB';
+            } else {
+                title.textContent = '✨ 孵化成功！获得第三代宠物';
+                title.style.color = '#2ECC71';
+            }
+            
+            img.src = 'images/' + pet.img;
+            img.onerror = () => { img.style.display = 'none'; };
+            img.style.display = 'block';
+            
+            info.innerHTML = `
+                <h3 style="color: ${pet.rarity === 'S+' ? '#FF00FF' : pet.rarity === 'S' ? '#9B59B6' : '#667eea'};">${pet.name}</h3>
+                <p>职业：${pet.profession}</p>
+                <p>稀有度：${pet.rarity}</p>
+                <p>战力：⚡${pet.power}</p>
+                <p style="margin-top:10px;font-size:12px;color:#999;">已加入你的宠物收藏</p>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('show');
+            selectedPet = null;
+        }
+
+        // 显示宠物详情弹窗
+        let detailPetIdx = null;
+        function showPetDetail(idx) {
+            detailPetIdx = idx;
+            const pet = gameData.pets[idx];
+            const modal = document.getElementById('petDetailModal');
+            const title = document.getElementById('detailTitle');
+            const img = document.getElementById('detailImage');
+            const info = document.getElementById('detailInfo');
+            
+            title.textContent = pet.name;
+            title.style.color = pet.rarity === 'G0' ? '#FFD700' : pet.rarity === 'S+' ? '#FF00FF' : pet.rarity === 'S' ? '#9B59B6' : '#667eea';
+            img.src = 'images/' + pet.img;
+            img.onerror = () => { img.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>'; };
+            
+            // 计算属性（如果没有则生成，按稀有度差异化）
+            let talent, constitution, mana;
+            if (pet.talent) {
+                talent = pet.talent;
+                constitution = pet.constitution;
+                mana = pet.mana;
+            } else {
+                // 根据稀有度生成不同的属性范围
+                const attrRanges = {
+                    'G0': [80, 120, 80, 120, 60, 100],    // 创世
+                    'S+': [60, 100, 60, 100, 40, 80],    // 至尊
+                    'S': [50, 90, 50, 90, 30, 60],        // 传说
+                    'G2': [40, 70, 40, 70, 20, 40],     // 第二代
+                    'G3': [20, 50, 20, 50, 10, 30]    // 第三代
+                };
+                const range = attrRanges[pet.rarity] || attrRanges['G3'];
+                talent = range[0] + Math.floor(Math.random() * (range[1] - range[0]));
+                constitution = range[2] + Math.floor(Math.random() * (range[3] - range[2]));
+                mana = range[4] + Math.floor(Math.random() * (range[5] - range[4]));
+                
+                // 保存属性
+                pet.talent = talent;
+                pet.constitution = constitution;
+                pet.mana = mana;
+            }
+            
+            info.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                    <div class="stat-item"><strong>职业：</strong>${pet.profession}</div>
+                    <div class="stat-item"><strong>稀有度：</strong>${pet.rarity}</div>
+                    <div class="stat-item"><strong>代数：</strong>${getGenText(pet.rarity)}</div>
+                    <div class="stat-item"><strong>孵化次数：</strong>${pet.hatchCount || 0} 次</div>
+                </div>
+                <h3 style="margin: 15px 0 10px;">📊 战斗属性</h3>
+                <div class="stats">
+                    <div class="stat-item"><strong>⚔️ 战斗力：</strong>${pet.power}</div>
+                    <div class="stat-item"><strong>🎯 战斗天赋：</strong>${talent}</div>
+                    <div class="stat-item"><strong>🛡️ 体质：</strong>${constitution}</div>
+                    <div class="stat-item"><strong>✨ 法力：</strong>${mana}</div>
+                </div>
+                <h3 style="margin: 15px 0 10px;">�技能</h3>
+                <div style="font-size: 13px; color: #666;">${getSkills(pet.profession, pet.rarity)}</div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        // 获取代数文本
+        function getGenText(rarity) {
+            if (rarity === 'G0') return '创世一代';
+            if (rarity === 'S+') return '至尊';
+            if (rarity === 'S') return '传说';
+            if (rarity === 'G2') return '第二代';
+            if (rarity === 'G3') return '第三代';
+            return '普通';
+        }
+
+        // 获取技能
+        function getSkills(profession, rarity) {
+            const skillMap = {
+                '功夫': '💪 太极拳 | 🦵 旋风腿 | 🥊 碎金拳',
+                '厨师': '🍳 火候掌控 | 🔪 刀工精通 | 🍲 美食诱惑',
+                '魔法': '🔥 火焰术 | ❄️ 冰霜箭 | ⚡ 闪电链',
+                '牛仔': '🤠 套马索 | 🔫 精准射击 | 🐎 驯马术',
+                '忍者': '🗡️ 手里剑 | 💨 瞬身术 | 🌑 暗影杀',
+                '海盗': '⚓ 钩爪 | 🏴 海战技巧 | 💰 掠夺术'
+            };
+            const skills = skillMap[profession] || '暂无技能';
+            if (rarity === 'G0' || rarity === 'S+') return skills + ' | ✨ 觉醒技';
+            return skills;
+        }
+
+        // 关闭宠物详情
+        function closePetDetail() {
+            document.getElementById('petDetailModal').classList.remove('show');
+            detailPetIdx = null;
+        }
+
+        // 出战
+        function setBattlePet() {
+            if (detailPetIdx === null) return;
+            alert('已将 ' + gameData.pets[detailPetIdx].name + ' 设置为出战宠物！');
+            closePetDetail();
+        }
+
+        // 选为合成
+        function setSynthesisPet() {
+            if (detailPetIdx === null) return;
+            selectPetForHatch(detailPetIdx);
+            closePetDetail();
+        }
+
+        // 显示登录UI
+        function showLoginUI() {
+            const modal = document.getElementById('loginModal');
+            const loginForm = document.getElementById('loginForm');
+            const loggedInInfo = document.getElementById('loggedInInfo');
+            
+            if (gameData.isLoggedIn && gameData.username) {
+                loginForm.style.display = 'none';
+                loggedInInfo.style.display = 'block';
+                document.getElementById('loggedUsername').textContent = gameData.username;
+                if (gameData.registeredAt) {
+                    const date = new Date(gameData.registeredAt);
+                    document.getElementById('registerTime').textContent = date.toLocaleDateString('zh-CN');
+                }
+            } else {
+                loginForm.style.display = 'block';
+                loggedInInfo.style.display = 'none';
+            }
+            
+            modal.classList.add('show');
+        }
+
+        // 登录
+        function doLogin() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!username || !password) {
+                alert('请输入用户名和密码！');
+                return;
+            }
+            
+            // 验证用户
+            const savedUser = localStorage.getItem('petPlanetUser_' + username);
+            if (savedUser) {
+                const userData = JSON.parse(savedUser);
+                if (userData.password === password) {
+                    // 先尝试从主存档加载（保留孵化进度）
+                    const mainSave = localStorage.getItem('petPlanetData');
+                    if (mainSave) {
+                        try {
+                            const mainData = JSON.parse(mainSave);
+                            if (mainData.username === username && mainData.pets && mainData.pets.length > 0) {
+                                // 主存档有这个用户的数据且已有宠物，优先使用
+                                gameData.username = username;
+                                gameData.isLoggedIn = true;
+                                gameData.pg = mainData.pg || userData.pg;
+                                gameData.pets = mainData.pets;
+                                gameData.totalHatched = mainData.totalHatched || 0;
+                                gameData.totalLoginDays = mainData.totalLoginDays || 0;
+                                gameData.lastLoginDate = mainData.lastLoginDate || '';
+                                gameData.registeredAt = mainData.registeredAt || userData.registeredAt;
+                                saveGame();
+                                updateBalances();
+                                updateUserStatus();
+                                closeLoginModal();
+                                showTab('collection');
+                                return;
+                            }
+                        } catch(e) {}
+                    }
+                    // 没有主存档或主存档无宠物，使用用户档案数据
+                    gameData.username = username;
+                    gameData.isLoggedIn = true;
+                    gameData.pg = userData.pg;
+                    gameData.pets = userData.pets || [];
+                    gameData.totalHatched = userData.totalHatched || 0;
+                    gameData.totalLoginDays = userData.totalLoginDays || 0;
+                    gameData.lastLoginDate = userData.lastLoginDate || '';
+                    gameData.registeredAt = userData.registeredAt;
+                    saveGame();
+                    updateBalances();
+                    updateUserStatus();
+                    closeLoginModal();
+                    showTab('collection');
+                    return;
+                }
+            }
+            alert('用户名或密码错误！');
+        }
+
+        // 注册
+        function doRegister() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!username || !password) {
+                alert('请输入用户名和密码！');
+                return;
+            }
+            
+            if (username.length < 2) {
+                alert('用户名至少需要2个字符！');
+                return;
+            }
+            
+            if (password.length < 4) {
+                alert('密码至少需要4个字符！');
+                return;
+            }
+            
+            // 检查是否已存在
+            const savedUser = localStorage.getItem('petPlanetUser_' + username);
+            if (savedUser) {
+                alert('用户名已存在，请登录或使用其他用户名！');
+                return;
+            }
+            
+            // 创建新用户
+            const newUser = {
+                username: username,
+                password: password,
+                pg: 500,  // 注册赠送 500 PG
+                pets: [
+                    Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0}),
+                    Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now() + 1, hatchCount: 0, lastHatchTime: 0})
+                ],
+                registeredAt: Date.now(),
+                totalHatched: 0,
+                totalLoginDays: 0,
+                lastLoginDate: ''
+            };
+            
+            localStorage.setItem('petPlanetUser_' + username, JSON.stringify(newUser));
+            
+            // 登录
+            gameData.username = username;
+            gameData.isLoggedIn = true;
+            gameData.pg = newUser.pg;
+            gameData.pets = newUser.pets;
+            gameData.totalHatched = 0;
+            gameData.totalLoginDays = 0;
+            gameData.lastLoginDate = '';
+            gameData.registeredAt = newUser.registeredAt;
+            
+            saveGame();
+            updateBalances();
+            updateUserStatus();
+            closeLoginModal();
+            showTab('collection');
+            
+            alert('🎉 注册成功！已赠送 500 PG 和 2 只创世宠物！');
+        }
+
+        // 关闭登录弹窗
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+        }
+
+        // 退出登录
+        function doLogout() {
+            if (!confirm('确定要退出登录吗？你的宠物数据会保留在本地。')) return;
+            gameData.username = '';
+            gameData.isLoggedIn = false;
+            saveGame();
+            updateUserStatus();
+            closeLoginModal();
+            initPetStatus();
+            decayPetStatus();
+            setInterval(decayPetStatus, 60000); // Decay every minute
+            showTab('collection');
+        }
+
+        // 更新用户状态显示
+        function updateUserStatus() {
+            const statusEl = document.getElementById('userStatus');
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (gameData.isLoggedIn && gameData.username) {
+                statusEl.textContent = '👤 ' + gameData.username;
+                logoutBtn.style.display = 'block';
+            } else {
+                statusEl.textContent = '👤 未登录';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        // 显示对战
+        // ========== 对战系统 ==========
+        let battleState = null; // { playerPet, npcPet, playerHP, npcHP, log, timer }
+
+        function showBattle(content) {
+            if (!gameData.username) { content.innerHTML = '<p style="text-align:center;color:#999;padding:50px;">请先登录！</p>'; return; }
+            if (gameData.pets.length === 0) { content.innerHTML = '<p style="text-align:center;color:#999;padding:50px;">你没有宠物，先去孵化吧！</p>'; return; }
+
+            let html = '<h2>⚔️ 对战系统</h2>';
+            html += '<p style="color:#666;font-size:13px;margin-bottom:15px;text-align:center;">选择一个宠物出战，挑战NPC训练师！</p>';
+
+            // 玩家宠物列表
+            html += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px;">';
+            gameData.pets.forEach(function(pet) {
+                var isBattlePet = battleState && battleState.playerPet && battleState.playerPet.uid === pet.uid;
+                html += '<div onclick="startBattle(' + pet.uid + ')" style="background:' + (isBattlePet ? 'linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'white;') + 'border-radius:12px;padding:12px;width:130px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;transition:0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+                html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (('images/' + pet.img) || ('images/' + pet.id + '.png')) + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
+                html += '<div style="font-weight:bold;font-size:13px;">' + pet.name + '</div>';
+                html += '<div style="font-size:11px;color:' + (isBattlePet ? 'rgba(255,255,255,0.8)' : '#999') + ';">⚡' + pet.power + ' | ' + (pet.profession||'无') + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            // 对战动画区域
+            html += '<div id="battleArena" style="display:none;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:15px;padding:20px;margin-top:20px;color:white;min-height:300px;">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+            // 玩家宠物
+            html += '<div id="battlePlayer" style="text-align:center;flex:1;">';
+            html += '<div id="playerPetImg" style="font-size:60px;"></div>';
+            html += '<div id="playerPetName" style="font-weight:bold;"></div>';
+            html += '<div id="playerHPBar" style="background:#333;border-radius:10px;height:16px;margin-top:8px;overflow:hidden;"><div id="playerHPFill" style="background:linear-gradient(90deg,#00b894,#00cec9);height:100%;width:100%;transition:width 0.3s;border-radius:10px;"></div></div>';
+            html += '<div id="playerHPLabel" style="font-size:11px;margin-top:3px;">HP: 100%</div>';
+            html += '</div>';
+            // VS
+            html += '<div style="font-size:32px;font-weight:bold;align-self:center;padding:0 20px;">⚡VS⚡</div>';
+            // NPC宠物
+            html += '<div id="battleNPC" style="text-align:center;flex:1;">';
+            html += '<div id="npcPetImg" style="font-size:60px;"></div>';
+            html += '<div id="npcPetName" style="font-weight:bold;"></div>';
+            html += '<div id="npcHPBar" style="background:#333;border-radius:10px;height:16px;margin-top:8px;overflow:hidden;"><div id="npcHPFill" style="background:linear-gradient(90deg,#e17055,#d63031);height:100%;width:100%;transition:width 0.3s;border-radius:10px;"></div></div>';
+            html += '<div id="npcHPLabel" style="font-size:11px;margin-top:3px;">HP: 100%</div>';
+            html += '</div>';
+            html += '</div>';
+            // 战斗日志
+            html += '<div id="battleLog" style="background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;margin-top:20px;height:120px;overflow-y:auto;font-size:12px;line-height:1.8;"></div>';
+            // 战斗结果
+            html += '<div id="battleResult" style="display:none;text-align:center;margin-top:15px;"></div>';
+            html += '</div>';
+
+            content.innerHTML = html;
+        }
+
+        function startBattle(petUid) {
+            var pet = gameData.pets.find(function(p) { return p.uid === petUid; });
+            if (!pet) return;
+
+            // 随机选NPC宠物
+            var npcPet = petDatabase[Math.floor(Math.random() * petDatabase.length)];
+            // 复制并调整NPC宠物属性
+            npcPet = JSON.parse(JSON.stringify(npcPet));
+            npcPet.power = Math.max(500, pet.power + Math.floor(Math.random() * 600) - 300); // NPC战力接近玩家
+
+            var playerHP = pet.power * 3;
+            var npcHP = npcPet.power * 3;
+
+            battleState = { playerPet: pet, npcPet: npcPet, playerHP: playerHP, npcHP: npcHP, maxPlayerHP: playerHP, maxNpcHP: npcHP, log: [], round: 0 };
+
+            // 显示对战区域
+            document.getElementById('battleArena').style.display = 'block';
+            document.getElementById('playerPetImg').innerHTML = '<img src="' + (('images/' + pet.img) || ('images/' + pet.id + '.png')) + '" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+            document.getElementById('playerPetName').textContent = pet.name + ' ⚡' + pet.power;
+            document.getElementById('npcPetImg').innerHTML = '<img src="images/' + npcPet.id + '.png" style="width:60px;height:60px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+            document.getElementById('npcPetName').textContent = '🤖' + npcPet.name + ' ⚡' + npcPet.power;
+
+            addBattleLog('⚔️ 对战开始！' + pet.name + ' VS ' + npcPet.name);
+            addBattleLog('--- 第1回合 ---');
+
+            // 延迟开始战斗
+            setTimeout(function() { executeBattleTurn(); }, 800);
+        }
+
+        function addBattleLog(msg) {
+            battleState.log.push(msg);
+            var logEl = document.getElementById('battleLog');
+            if (logEl) {
+                logEl.innerHTML += '<div>' + msg + '</div>';
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function updateHPBars() {
+            var pPct = Math.max(0, battleState.playerHP / battleState.maxPlayerHP * 100);
+            var nPct = Math.max(0, battleState.npcHP / battleState.maxNpcHP * 100);
+            var pFill = document.getElementById('playerHPFill');
+            var nFill = document.getElementById('npcHPFill');
+            var pLabel = document.getElementById('playerHPLabel');
+            var nLabel = document.getElementById('npcHPLabel');
+            if (pFill) pFill.style.width = pPct + '%';
+            if (nFill) nFill.style.width = nPct + '%';
+            if (pLabel) pLabel.textContent = 'HP: ' + Math.max(0, Math.ceil(pPct)) + '%';
+            if (nLabel) nLabel.textContent = 'HP: ' + Math.max(0, Math.ceil(nPct)) + '%';
+        }
+
+        function executeBattleTurn() {
+            if (!battleState) return;
+            battleState.round++;
+
+            var pet = battleState.playerPet;
+            var npc = battleState.npcPet;
+
+            // 玩家攻击
+            var playerAtk = Math.floor(pet.power / 5 + Math.random() * pet.power / 3);
+            battleState.npcHP -= playerAtk;
+            addBattleLog('🗡️ ' + pet.name + ' 攻击，造成 ' + playerAtk + ' 伤害！');
+            updateHPBars();
+
+            if (battleState.npcHP <= 0) {
+                endBattle('win');
+                return;
+            }
+
+            // NPC攻击（延迟）
+            setTimeout(function() {
+                var npcAtk = Math.floor(npc.power / 5 + Math.random() * npc.power / 3);
+                battleState.playerHP -= npcAtk;
+                addBattleLog('🤖 ' + npc.name + ' 攻击，造成 ' + npcAtk + ' 伤害！');
+                updateHPBars();
+
+                if (battleState.playerHP <= 0) {
+                    endBattle('lose');
+                    return;
+                }
+
+                // 下一回合
+                if (battleState.round < 20) {
+                    addBattleLog('--- 第' + (battleState.round + 1) + '回合 ---');
+                    setTimeout(function() { executeBattleTurn(); }, 600);
+                } else {
+                    // 20回合平局，HP多者胜
+                    endBattle(battleState.playerHP >= battleState.npcHP ? 'win' : 'lose');
+                }
+            }, 500);
+        }
+
+        function endBattle(result) {
+            if (!battleState) return;
+            var resultEl = document.getElementById('battleResult');
+            if (!resultEl) return;
+
+            resultEl.style.display = 'block';
+            if (resultEl) resultEl.innerHTML = '';
+
+            if (result === 'win') {
+                var reward = 50 + Math.floor(Math.random() * 100); // 50~150 PG
+                gameData.pg += reward;
+                updateBalances();
+                saveGame();
+                resultEl.innerHTML = '<div style="font-size:48px;margin-bottom:10px;">🎉</div><div style="font-size:20px;font-weight:bold;color:#00b894;">胜利！</div><div style="margin-top:10px;font-size:14px;">获得 <strong>' + reward + ' PG</strong> 奖励！</div><button onclick="showBattle(document.getElementById(\'content\'))" style="margin-top:15px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;padding:10px 30px;font-size:14px;cursor:pointer;">再战</button>';
+                addBattleLog('🎉 你赢了！获得 ' + reward + ' PG！');
+            } else {
+                resultEl.innerHTML = '<div style="font-size:48px;margin-bottom:10px;">😢</div><div style="font-size:20px;font-weight:bold;color:#d63031;">失败...</div><div style="margin-top:10px;font-size:14px;">下次再来吧！</div><button onclick="showBattle(document.getElementById(\'content\'))" style="margin-top:15px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;padding:10px 30px;font-size:14px;cursor:pointer;">再试一次</button>';
+                addBattleLog('😢 你输了，下次加油！');
+            }
+        }
+
+        // ========== 对战系统结束 ==========
+
+        
+        function showShop(content) {
+            let html = '<h2>🏪 商店</h2>';
+            html += '<div style="max-width: 600px; margin: 0 auto;">';
+            
+            // 500 PG 宠物蛋 - 可孵化出第二代或第三代
+            html += `
+                <div style="background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: white;">
+                    <h3>🥚 二代宠物蛋</h3>
+                    <p>500 PG 随机孵化出第二代或第三代宠物！</p>
+                    <p style="font-size: 12px; margin-top: 5px;">🎯 70% 第二代 + 30% 第三代</p>
+                    <div style="margin-top: 15px;">
+                        <span style="font-size: 24px; font-weight: bold;">500 PG</span>
+                        <button class="btn" style="float: right; background: white; color: #2980B9;" onclick="buyGen2Egg()">购买</button>
+                    </div>
+                </div>
+            `;
+            
+            html += `
+                <div style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: white;">
+                    <h3>🥚 创世宠物蛋</h3>
+                    <p>有10%概率开出创世宠物！</p>
+                    <div style="margin-top: 15px;">
+                        <span style="font-size: 24px; font-weight: bold;">2600 PG</span>
+                        <button class="btn" style="float: right; background: white; color: #FFA500;" onclick="buyGenesisEgg()">购买</button>
+                    </div>
+                </div>
+            `;
+            
+            html += `
+                <div style="background: linear-gradient(135deg, #FF00FF 0%, #9B59B6 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: white;">
+                    <h3>🌟 至尊宠物蛋</h3>
+                    <p>100%开出至尊宠物，战力排第二！</p>
+                    <div style="margin-top: 15px;">
+                        <span style="font-size: 24px; font-weight: bold;">2800 PG</span>
+                        <button class="btn" style="float: right; background: white; color: #9B59B6;" onclick="buySupremeEgg()">购买</button>
+                    </div>
+                </div>
+            `;
+            
+            html += `
+                <div style="background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: white;">
+                    <h3>🌈 传说宠物蛋</h3>
+                    <p>100%开出传说宠物！</p>
+                    <div style="margin-top: 15px;">
+                        <span style="font-size: 24px; font-weight: bold;">2000 PG</span>
+                        <button class="btn" style="float: right; background: white; color: #8E44AD;" onclick="buyLegendEgg()">购买</button>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        // 购买二代宠物蛋
+        function buyGen2Egg() {
+            if (gameData.pg < 500) {
+                alert('PG币不足！需要 500 PG');
+                return;
+            }
+            gameData.pg -= 500;
+            
+            // 70% 第二代 + 30% 第三代
+            const roll = Math.random();
+            let pet;
+            if (roll < 0.7) {
+                // 70% 第二代
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0});
+            } else {
+                // 30% 第三代
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G3', power: 750 + Math.floor(Math.random() * 450), hatchCount: 0, lastHatchTime: 0});
+            }
+            
+            gameData.pets.push(pet);
+            updateBalances();
+            saveGame();
+            showResult(pet, pet.rarity === 'G2' ? 'g2' : 'g3');
+        }
+
+        // 购买创世蛋
+        function buyGenesisEgg() {
+            if (gameData.pg < 2600) {
+                alert('PG币不足！需要 2600 PG');
+                return;
+            }
+            gameData.pg -= 2600;
+            gameData.totalHatched += 1;
+            const isGenesis = Math.random() < 0.1;
+            let pet;
+            if (isGenesis) {
+                pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), hatchCount: 0, lastHatchTime: 0});
+                pet.power = 2500 + Math.floor(Math.random() * 500);
+            } else {
+                pet = Object.assign({}, petDatabase[Math.floor(Math.random() * petDatabase.length)], {uid: Date.now(), rarity: 'G2', power: 1000 + Math.floor(Math.random() * 600), hatchCount: 0, lastHatchTime: 0});
+            }
+            gameData.pets.push(pet);
+            updateBalances();
+            saveGame();
+            showResult(pet, isGenesis ? 'genesis' : 'g2');
+        }
+
+        // 购买至尊蛋
+        function buySupremeEgg() {
+            if (gameData.pg < 2800) {
+                alert('PG币不足！需要 2800 PG');
+                return;
+            }
+            gameData.pg -= 2800;
+            gameData.totalHatched += 1;
+            const pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), rarity: 'S+', power: 1600 + Math.floor(Math.random() * 800), hatchCount: 0, lastHatchTime: 0});
+            pet.name = pet.name.replace('创世', '至尊');
+            gameData.pets.push(pet);
+            updateBalances();
+            saveGame();
+            showResult(pet, 'supreme');
+        }
+
+        // 购买传说蛋
+        function buyLegendEgg() {
+            if (gameData.pg < 2000) {
+                alert('PG币不足！需要 2000 PG');
+                return;
+            }
+            gameData.pg -= 2000;
+            gameData.totalHatched += 1;
+            const pet = Object.assign({}, genesisPets[Math.floor(Math.random() * genesisPets.length)], {uid: Date.now(), rarity: 'S', power: 1300 + Math.floor(Math.random() * 700), hatchCount: 0, lastHatchTime: 0});
+            pet.name = pet.name.replace('创世', '传说');
+            gameData.pets.push(pet);
+            updateBalances();
+            saveGame();
+            showResult(pet, 'legendary');
+        }
+
+        // 更新余额显示
+        function updateBalances() {
+            document.getElementById('pgBalance').textContent = gameData.pg;
+        }
+
+                // ========== 聊天系统 ==========
+        const chatNPCs = [
+            { name: '龙骑士', avatar: '🐉' },
+            { name: '法师艾伦', avatar: '🧙' },
+            { name: '狐狸精', avatar: '🦊' },
+            { name: '剑客阿飞', avatar: '⚔️' },
+            { name: '樱花酱', avatar: '🌸' },
+            { name: '富豪王', avatar: '💎' }
+        ];
+
+        const npcMessages = [
+            '今天孵化出了传说宠物！太开心了！',
+            '有人要一起对战吗？我的战力2800！',
+            '创世蛋值得买吗？我犹豫中...',
+            '签到领了50PG，攒钱买传说蛋！',
+            '刚合成了一只新宠物，属性超棒！',
+            '有人知道怎么获得至尊宠物吗？',
+            '今天运气爆棚，连出两只S级！',
+            '这个游戏太好玩了，停不下来~',
+            '我的宠物已经10只了，还要继续收集！',
+            '商店什么时候上新啊？期待！'
+        ];
+
+        function showChat(content) {
+            let html = '<h2>💬 世界频道</h2>';
+            html += '<p style="color:#666;font-size:12px;margin-bottom:10px;">与幻兽契约的驯兽师们交流吧！</p>';
+            html += '<div id="chatMessages" style="background:#f8f9fa;border-radius:12px;padding:15px;height:350px;overflow-y:auto;margin-bottom:15px;display:flex;flex-direction:column;gap:8px;"></div>';
+            html += '<div style="display:flex;gap:8px;">';
+            html += '<input type="text" id="chatInput" style="flex:1;padding:12px;border:2px solid #667eea;border-radius:25px;font-size:14px;outline:none;" placeholder="输入消息...（按Enter发送）">';
+            html += '<button id="chatSendBtn" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;padding:12px 25px;font-size:14px;cursor:pointer;font-weight:bold;">发送</button>';
+            html += '</div>';
+            html += '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">';
+            var quickReplies = ['大家好！', '求组队~', '恭喜！', '厉害！', '怎么玩？', '加油！'];
+            for (var i = 0; i < quickReplies.length; i++) {
+                html += '<button onclick="chatQuickReply(this)" style="background:#e8eaf6;color:#667eea;border:none;border-radius:15px;padding:5px 12px;font-size:12px;cursor:pointer;">' + quickReplies[i] + '</button>';
+            }
+            html += '</div>';
+            content.innerHTML = html;
+            var input = document.getElementById('chatInput');
+            var btn = document.getElementById('chatSendBtn');
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') sendChatMessage();
+                });
+            }
+            if (btn) {
+                btn.addEventListener('click', function() { sendChatMessage(); });
+            }
+            loadChatMessages();
+        }
+
+        function chatQuickReply(el) {
+            var input = document.getElementById('chatInput');
+            if (input) {
+                input.value = el.textContent || el.innerText;
+                sendChatMessage();
+            }
+        }
+
+        function loadChatMessages() {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+            var messages = [];
+            try { messages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); } catch(e) { messages = []; }
+            if (messages.length === 0) {
+                messages.push({ text: '📢 欢迎来到幻兽契约世界！', type: 'system' });
+                messages.push({ text: '📢 每日签到可获得 50 PG 奖励！', type: 'system' });
+                messages.push({ name: '🐉 龙骑士', avatar: '🐉', text: '欢迎新驯兽师加入幻兽契约！', time: '08:00', type: 'npc' });
+                messages.push({ name: '🧙 法师艾伦', avatar: '🧙', text: '今天孵化出了传说宠物！太开心了！', time: '08:05', type: 'npc' });
+                localStorage.setItem('chatMessages', JSON.stringify(messages));
+            }
+            renderChatMessages(container, messages);
+            if (!window.chatTimer) {
+                window.chatTimer = setInterval(function() {
+                    if (Math.random() < 0.3) addRandomNPCMessage();
+                }, 15000);
+            }
+        }
+
+        function renderChatMessages(container, messages) {
+            container.innerHTML = '';
+            messages.forEach(function(msg) {
+                if (msg.type === 'system') {
+                    container.innerHTML += '<div style="text-align:center;padding:8px;background:linear-gradient(135deg,#ffeaa7,#fdcb6e);border-radius:8px;font-size:12px;color:#d63031;font-weight:bold;">' + msg.text + '</div>';
+                } else if (msg.type === 'me') {
+                    var t = msg.time || '';
+                    var n = msg.name || '我';
+                    container.innerHTML += '<div style="display:flex;justify-content:flex-end;"><div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:10px 15px;border-radius:15px 15px 0 15px;max-width:70%;font-size:13px;"><div style="font-size:11px;opacity:0.8;margin-bottom:3px;">' + n + '</div>' + msg.text + '<div style="font-size:10px;opacity:0.7;text-align:right;margin-top:4px;">' + t + '</div></div></div>';
+                } else {
+                    var t2 = msg.time || '';
+                    var n2 = (msg.avatar || '') + ' ' + (msg.name || '');
+                    container.innerHTML += '<div style="display:flex;justify-content:flex-start;"><div style="background:white;padding:10px 15px;border-radius:15px 15px 15px 0;max-width:70%;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="font-size:11px;color:#667eea;font-weight:bold;margin-bottom:3px;">' + n2 + '</div>' + msg.text + '<div style="font-size:10px;color:#999;text-align:right;margin-top:4px;">' + t2 + '</div></div></div>';
+                }
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            var input = document.getElementById('chatInput');
+            if (!input) return;
+            var text = input.value.trim();
+            if (!text) return;
+            if (text.length > 100) { alert('消息不能超过100字'); return; }
+            var now = new Date();
+            var hh = now.getHours(); var mm = now.getMinutes();
+            var time = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+            var msg = { name: (gameData.username || '神秘人'), avatar: '😊', text: text, time: time, type: 'me' };
+            var messages = [];
+            try { messages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); } catch(e) { messages = []; }
+            messages.push(msg);
+            if (messages.length > 100) messages = messages.slice(-100);
+            try { localStorage.setItem('chatMessages', JSON.stringify(messages)); } catch(e) {}
+            input.value = '';
+            var container = document.getElementById('chatMessages');
+            if (container) renderChatMessages(container, messages);
+            if (Math.random() < 0.5) {
+                setTimeout(function() { addRandomNPCMessage(); }, 1000 + Math.random() * 2000);
+            }
+        }
+
+        function addRandomNPCMessage() {
+            var npc = chatNPCs[Math.floor(Math.random() * chatNPCs.length)];
+            var text = npcMessages[Math.floor(Math.random() * npcMessages.length)];
+            var now = new Date();
+            var hh = now.getHours(); var mm = now.getMinutes();
+            var time = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+            var msg = { name: npc.name, avatar: npc.avatar, text: text, time: time, type: 'npc' };
+            var messages = [];
+            try { messages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); } catch(e) { messages = []; }
+            messages.push(msg);
+            if (messages.length > 100) messages = messages.slice(-100);
+            try { localStorage.setItem('chatMessages', JSON.stringify(messages)); } catch(e) {}
+            var container = document.getElementById('chatMessages');
+            if (container) renderChatMessages(container, messages);
+        }
+
+        // ========== 聊天系统结束 ==========
+
+        init();
+    
+
+    
+
+    // ========== 偷蛋功能（改版：访问好友小窝）==========
+    function showFriendHouses() {
+        console.log('[DEBUG] showFriendHouses 开始');
+        try {
+            let html = '<div style="text-align:center;margin-bottom:20px;"><h2>🏠 好友宠物小窝</h2><p style="color:#666;">访问好友的宠物小窝，偷偷拿一个蛋！</p></div>';
+            
+            // Generate 6 fake friends with pet houses
+            const friends = [
+                { name: '小明', pets: 5, eggs: 3 },
+                { name: '小红', pets: 3, eggs: 2 },
+                { name: '小刚', pets: 7, eggs: 4 },
+                { name: '小美', pets: 4, eggs: 1 },
+                { name: '小王', pets: 6, eggs: 3 },
+                { name: '小李', pets: 2, eggs: 2 }
+            ];
+            
+            html += '<div class="pet-grid">';
+            friends.forEach((f, idx) => {
+                const canSteal = Math.random() < 0.7;
+                html += '<div class="pet-card" onclick="visitFriendHouse(' + idx + ')" style="cursor:pointer;">';
+                html += '<div style="font-size:60px;">🏠</div>';
+                html += '<div class="pet-name">' + f.name + '的窝</div>';
+                html += '<div style="font-size:12px;color:#666;">宠物: ' + f.pets + '只 | 蛋: ' + f.eggs + '个</div>';
+                html += '<div style="margin-top:5px;">';
+                if (canSteal) {
+                    html += '<span style="color:#2ECC71;">🥚 可偷蛋</span>';
+                } else {
+                    html += '<span style="color:#E74C3C;">🚫 警惕中</span>';
+                }
+                html += '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            document.getElementById('content').innerHTML = html;
+            console.log('[DEBUG] showFriendHouses 完成');
+        } catch(e) {
+            console.error('[ERROR] showFriendHouses:', e);
+            showToast('加载好友列表失败');
+        }
     }
-  };
-}
 
-function showResult(pet){
-  var app=document.getElementById('app');
-  var modal=document.createElement('div');
-  modal.className='result-modal';
-  modal.innerHTML='<div class="result-box">'+
-    '<div class="result-name">🎉 获得 '+pet.name+'！</div>'+
-    '<div class="result-rarity" style="color:'+RARITY[pet.rarity].c+'">'+RARITY[pet.rarity].t+'</div>'+
-    '<div class="result-skill">⚔️ 技能：'+pet.skill+'</div>'+
-    '<div class="result-skill">战力：'+pet.power+'</div>'+
-    '<button class="result-btn" id="closeResult">收下</button></div>';
-  document.body.appendChild(modal);
-  document.getElementById('closeResult').onclick=function(){
-    document.body.removeChild(modal);
-  };
-}
-
-function showSelectPet(msg,cb){
-  var modal=document.createElement('div');
-  modal.className='select-modal';
-  var html='<div class="select-box"><h3>'+msg+'</h3>';
-  for(var i=0;i<ST.pets.length;i++){
-    html+='<div class="select-item" data-idx="'+i+'">'+ST.pets[i].img+' '+ST.pets[i].name+' (Lv.'+(ST.pets[i].level||1)+')</div>';
-  }
-  html+='<div class="select-cancel" id="selCancel">取消</div></div>';
-  modal.innerHTML=html;
-  document.body.appendChild(modal);
-  var items=modal.querySelectorAll('.select-item');
-  for(var i=0;i<items.length;i++){
-    items[i].onclick=function(){
-      var idx=parseInt(this.dataset.idx);
-      document.body.removeChild(modal);
-      cb(idx);
-    };
-  }
-  document.getElementById('selCancel').onclick=function(){
-    document.body.removeChild(modal);
-    render(); // re-render in case state changed
-  };
-}
-
-function showAlert(msg){
-  var modal=document.createElement('div');
-  modal.className='select-modal';
-  modal.innerHTML='<div class="select-box"><h3 style="word-break:break-all">'+msg.replace(/\n/g,'<br>')+'</h3><div class="select-item" id="alertOk" style="text-align:center;background:#667eea;color:#fff">确定</div></div>';
-  document.body.appendChild(modal);
-  document.getElementById('alertOk').onclick=function(){
-    document.body.removeChild(modal);
-  };
-}
-
-function updateHeader(){
-  var pgEl=document.getElementById('hdr_pg');
-  if(pgEl)pgEl.textContent=ST.pg;
-}
-
-// ===== DUNGEON LOGIC =====
-function dungeonAttack(){
-  if(!ST.dungeonActive)return;
-  var alive=_zombies.filter(function(z){return!z.dead;});
-  if(!alive.length)return;
-  var target=alive[Math.floor(Math.random()*alive.length)];
-  var dmg=Math.floor(_power*(0.6+Math.random()*0.3));
-  target.hp-=dmg;
-  target.hit=true;
-  _dungeonLog.push((_pet?_pet.name:'宠')+' 攻击 '+target.name+' -'+dmg);
-  if(target.hp<=0){target.hp=0;target.dead=true;_dungeonLog.push(target.name+' 被击败！');}
-  ST.petX=80;
-  render();
-  setTimeout(function(){ST.petX=40;render();},250);
-  setTimeout(function(){
-    _zombies=_zombies.map(function(z){return{hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:z.x,y:z.y,hit:false,dead:z.dead};});
-    render();
-  },300);
-  setTimeout(checkWave,500);
-}
-
-function zombieMove(){
-  if(!ST.dungeonActive)return;
-  var petHp=ST.petHp;
-  var newZ=[];
-  for(var i=0;i<_zombies.length;i++){
-    var z=_zombies[i];
-    if(z.dead){newZ.push(z);continue;}
-    var nx=z.x-z.spd*12;
-    if(nx<=60){
-      petHp-=z.atk;
-      _dungeonLog.push(z.name+' 攻击！-'+z.atk);
-      newZ.push({hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:220+Math.random()*30,y:z.y,hit:z.hit,dead:z.dead});
-    }else{
-      newZ.push({hp:z.hp,maxHp:z.maxHp,atk:z.atk,spd:z.spd,name:z.name,uid:z.uid,x:nx,y:z.y,hit:false,dead:z.dead});
+    function visitFriendHouse(friendIdx) {
+        console.log('[DEBUG] visitFriendHouse:', friendIdx);
+        try {
+            const friendNames = ['小明', '小红', '小刚', '小美', '小王', '小李'];
+            const friendName = friendNames[friendIdx];
+            
+            let html = '<div style="text-align:center;"><h2>🏠 ' + friendName + '的宠物小窝</h2>';
+            html += '<p style="color:#666;">偷偷找一个蛋...</p></div>';
+            
+            html += '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:20px 0;">';
+            // Show 3-4 eggs in the friend's house
+            const eggCount = Math.floor(Math.random() * 3) + 2;
+            for (let i = 0; i < eggCount; i++) {
+                const success = i === 0; // First egg is stealable
+                html += '<div onclick="tryStealEgg(' + friendIdx + ', ' + i + ')" style="cursor:pointer;text-align:center;padding:20px;background:#f8f9fa;border-radius:10px;' + (success ? '' : 'opacity:0.5;') + '">';
+                html += '<div style="font-size:60px;">🥚</div>';
+                html += '<div style="font-size:12px;color:#666;">蛋 ' + (i+1) + '</div>';
+                if (success) {
+                    html += '<div style="font-size:11px;color:#2ECC71;">点击偷取</div>';
+                } else {
+                    html += '<div style="font-size:11px;color:#E74C3C;">已被发现</div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            
+            html += '<div style="text-align:center;margin-top:20px;"><button class="btn" onclick="showFriendHouses()">← 返回</button></div>';
+            
+            document.getElementById('content').innerHTML = html;
+            console.log('[DEBUG] visitFriendHouse 完成');
+        } catch(e) {
+            console.error('[ERROR] visitFriendHouse:', e);
+        }
     }
-  }
-  _zombies=newZ;
-  if(petHp<=0){
-    petHp=0;
-    _dungeonLog.push('宠物倒下了...');
-    ST.petHp=0;
-    clearInterval(_atkTimer);
-    clearInterval(_zTimer);
-    ST.dungeonActive=false;
-    save();
-    render();
-    showGameOver('闯关失败，下次再来！');
-    return;
-  }
-  ST.petHp=petHp;
-  render();
-}
 
-function checkWave(){
-  if(!ST.dungeonActive)return;
-  if(_zombies.every(function(z){return z.dead;})){
-    _waveIdx++;
-    if(_waveIdx<_waves.length){
-      _zombies=JSON.parse(JSON.stringify(_waves[_waveIdx]));
-      _dungeonLog.push('波次'+(1+_waveIdx)+'/'+_waves.length+'！');
-      render();
-    }else{
-      clearInterval(_atkTimer);
-      clearInterval(_zTimer);
-      ST.dungeonActive=false;
-      victory();
+    function tryStealEgg(friendIdx, eggIdx) {
+        console.log('[DEBUG] tryStealEgg:', friendIdx, eggIdx);
+        try {
+            if (eggIdx !== 0) {
+                showToast('😅 被发现了！下次再来...');
+                return;
+            }
+            
+            const lastSteal = localStorage.getItem('lastStealTime');
+            if (lastSteal && Date.now() - parseInt(lastSteal) < 1800000) {
+                const remaining = Math.ceil((1800000 - (Date.now() - parseInt(lastSteal))) / 60000);
+                showToast('⏰ 冷却中，' + remaining + '分钟后再来');
+                return;
+            }
+            
+            if (Math.random() < 0.1) {
+                const egg = petDatabase[Math.floor(Math.random() * petDatabase.length)];
+                const newPet = Object.assign({}, egg, { uid: Date.now(), hatchCount: 0, lastHatchTime: 0, status: { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() } });
+                gameData.pets.push(newPet);
+                saveGame();
+                showToast('🥚 偷蛋成功！获得 ' + egg.name);
+            } else {
+                showToast('😢 偷蛋失败...下次再来');
+            }
+            
+            localStorage.setItem('lastStealTime', Date.now());
+            setTimeout(() => showFriendHouses(), 1000);
+        } catch(e) {
+            console.error('[ERROR] tryStealEgg:', e);
+            showToast('偷蛋失败');
+        }
     }
-  }
+
+// ========== 养成系统 ==========
+    function decayPetStatus() {
+        if (!gameData.isLoggedIn) return;
+        const now = Date.now();
+        gameData.pets.forEach(pet => {
+            if (!pet.status) pet.status = { hunger: 80, health: 80, happiness: 80, lastDecay: now };
+            const elapsed = (now - pet.status.lastDecay) / 60000; // minutes
+            pet.status.hunger = Math.max(0, pet.status.hunger - elapsed * 2);
+            pet.status.health = Math.max(0, pet.status.health - elapsed * 0.5);
+            pet.status.happiness = Math.max(0, pet.status.happiness - elapsed * 1.5);
+            pet.status.lastDecay = now;
+        });
+        saveGame();
+    }
+
+    function initPetStatus() {
+        gameData.pets.forEach(pet => {
+            if (!pet.status) pet.status = { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() };
+        });
+    }
+
+    function feedPet(uid) {
+            try {
+                console.log('[DEBUG] feedPet 开始执行');
+
+        if (gameData.pg < 20) return showToast('PG不足！需要20 PG');
+        gameData.pg -= 20;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.hunger = Math.min(100, pet.status.hunger + 30);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🍗 喂养成功！饥饿值+30');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] feedPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
 }
 
-function victory(){
-  var pgR=30+ST.stage*20;
-  var eq=dropEquip(ST.stage);
-  ST.equip.push(eq);
-  var frag=null;
-  if(Math.random()<0.2){
-    var fi=Math.floor(Math.random()*FASHIONS.length);
-    frag=FASHIONS[fi].id;
-    ST.frag[frag]=(ST.frag[frag]||0)+1;
-  }
-  _reward={pg:pgR,equip:eq,frag:frag};
-  ST.pg+=pgR;
-  ST.stage++;
-  // Consume hunger
-  ST.pets=ST.pets.map(function(p){
-    if(p.uid===_pet.uid)return{hunger:Math.max(0,(p.hunger||100)-15),clean:p.clean,happy:p.happy,power:p.power,name:p.name,uid:p.uid,img:p.img,rarity:p.rarity,profession:p.profession,skill:p.skill,skillDmg:p.skillDmg,level:p.level,equip:p.equip,fashion:p.fashion,basePower:p.basePower,id:p.id};
-    return p;
-  });
-  save();
-  render();
+    function cleanPet(uid) {
+            try {
+                console.log('[DEBUG] cleanPet 开始执行');
+
+        if (gameData.pg < 15) return showToast('PG不足！需要15 PG');
+        gameData.pg -= 15;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.health = Math.min(100, pet.status.health + 25);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🧹 清洁成功！健康值+25');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] cleanPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
 }
 
-function showGameOver(msg){
-  var modal=document.createElement('div');
-  modal.className='game-over-modal';
-  modal.innerHTML='<div class="game-over-box">'+
-    '<div class="game-over-title">😢 '+msg+'</div>'+
-    '<button class="game-over-btn" id="gameOverOk">确定</button></div>';
-  document.body.appendChild(modal);
-  document.getElementById('gameOverOk').onclick=function(){document.body.removeChild(modal);};
+    function playWithPet(uid) {
+            try {
+                console.log('[DEBUG] playWithPet 开始执行');
+
+        if (gameData.pg < 10) return showToast('PG不足！需要10 PG');
+        gameData.pg -= 10;
+        const pet = gameData.pets.find(p => p.uid === uid);
+        if (pet && pet.status) {
+            pet.status.happiness = Math.min(100, pet.status.happiness + 35);
+            pet.exp = (pet.exp || 0) + 5;
+            checkLevelUp(pet);
+        }
+        saveGame();
+        updateBalances();
+        showToast('🎾 玩耍成功！快乐值+35');
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] playWithPet:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
 }
 
-// ===== BOOT =====
-render();
+    function stealEgg() {
+            try {
+                console.log('[DEBUG] stealEgg 开始执行');
+
+        const lastSteal = localStorage.getItem('lastStealTime');
+        if (lastSteal && Date.now() - parseInt(lastSteal) < 1800000) {
+            const remaining = Math.ceil((1800000 - (Date.now() - parseInt(lastSteal))) / 60000);
+            return showToast(`⏰ 冷却中，${remaining}分钟后再来`);
+        }
+        if (Math.random() < 0.1) {
+            const egg = petDatabase[Math.floor(Math.random() * petDatabase.length)];
+            const newPet = Object.assign({}, egg, { uid: Date.now(), hatchCount: 0, lastHatchTime: 0, status: { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() } });
+            gameData.pets.push(newPet);
+            saveGame();
+            showToast('🥚 偷蛋成功！获得 ' + egg.name);
+        } else {
+            showToast('😢 偷蛋失败...下次再来');
+        }
+        localStorage.setItem('lastStealTime', Date.now());
+        showCareTab();
+    
+            } catch(e) {
+                console.error('[ERROR] stealEgg:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    function showCareTab() {
+            try {
+                console.log('[DEBUG] showCareTab 开始执行');
+
+        decayPetStatus();
+        let html = '<div style="text-align:center; margin-bottom:20px;"><h2>❤️ 宠物养成</h2><p style="color:#666;">照顾你的宠物，保持它们健康快乐！</p></div>';
+        html += '<div class="pet-grid">';
+        gameData.pets.forEach(pet => {
+            const s = pet.status || { hunger: 80, health: 80, happiness: 80 };
+            const hungerColor = s.hunger > 60 ? '#2ECC71' : (s.hunger > 30 ? '#F39C12' : '#E74C3C');
+            const healthColor = s.health > 60 ? '#2ECC71' : (s.health > 30 ? '#F39C12' : '#E74C3C');
+            const happyColor = s.happiness > 60 ? '#2ECC71' : (s.happiness > 30 ? '#F39C12' : '#E74C3C');
+            html += `<div class="pet-card rarity-${pet.rarity}" onclick="showPetDetail(${pet.uid})" style="cursor:pointer;">
+                <img src="images/${pet.img}" alt="${pet.name}" style="width:100%;height:120px;object-fit:contain;" onerror="this.style.display='none'">
+                <div class="pet-name">${pet.name}</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.hunger}%;background:${hungerColor};"></div></div>
+                <div style="font-size:11px;color:#666;">🍖 饥饿: ${Math.round(s.hunger)}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.health}%;background:${healthColor};"></div></div>
+                <div style="font-size:11px;color:#666;">💊 健康: ${Math.round(s.health)}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${s.happiness}%;background:${happyColor};"></div></div>
+                <div style="font-size:11px;color:#666;">😊 快乐: ${Math.round(s.happiness)}%</div>
+                <div style="margin-top:8px; display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="event.stopPropagation();feedPet(${pet.uid})">🍗 喂</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="event.stopPropagation();cleanPet(${pet.uid})">🧹 清洁</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="event.stopPropagation();playWithPet(${pet.uid})">🎾 玩</button>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        
+        const lastSteal = localStorage.getItem('lastStealTime');
+        const canSteal = !lastSteal || Date.now() - parseInt(lastSteal) >= 1800000;
+        html += `<div style="text-align:center;margin-top:20px;">
+            <button class="btn btn-gold" onclick="showFriendHouses()">🏠 访问好友小窝</button>
+            ${canSteal ? '' : '<div class="cooldown-timer">冷却中...</div>'}
+        </div>`;
+        
+        document.getElementById('content').innerHTML = html;
+    
+            } catch(e) {
+                console.error('[ERROR] showCareTab:', e);
+                showToast('操作失败，请刷新页面重试');
+            }
+}
+
+    
+
+    
+
+    // ========== 合成系统 V2 ==========
+    let synthPet1 = null;
+    let synthPet2 = null;
+    let synthFilter = 'all';
+
+    function showTabSynth() {
+        console.log('[DEBUG] showTabSynth called');
+        try {
+            let html = '<div style="text-align:center;margin-bottom:20px;"><h2>🔬 宠物合成</h2><p style="color:#666;">选择同类宠物合成，获得更强大的新宠物！</p></div>';
+
+            // Filter buttons
+            html += '<div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;justify-content:center;">';
+            const professions = ['all', '功夫', '厨师', '魔法', '牛仔', '忍者', '海盗'];
+            const labels = {'all':'全部', '功夫':'功夫', '厨师':'厨师', '魔法':'魔法', '牛仔':'牛仔', '忍者':'忍者', '海盗':'海盗'};
+            professions.forEach(p => {
+                const active = synthFilter === p;
+                html += '<button onclick="synthFilter=\''+p+'\';showTabSynth()" style="padding:8px 16px;border-radius:20px;border:2px solid '+(active?'#667eea':'#ddd')+';background:'+(active?'#667eea':'white')+';color:'+(active?'white':'#333')+';cursor:pointer;font-size:14px;font-weight:bold;">'+labels[p]+'</button>';
+            });
+            html += '</div>';
+
+            // Selected pets preview area
+            html += '<div style="background:linear-gradient(135deg,#f8f9fa,#e8eaf6);padding:20px;border-radius:15px;margin-bottom:20px;min-height:120px;">';
+            if (synthPet1 || synthPet2) {
+                html += '<div style="display:flex;gap:20px;justify-content:center;align-items:center;flex-wrap:wrap;">';
+                // Pet 1 slot
+                if (synthPet1) {
+                    const p1 = gameData.pets.find(p => p.uid === synthPet1);
+                    if (p1) {
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #667eea;">';
+                        html += '<img src="images/'+p1.img+'" style="width:70px;height:70px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                        html += '<div style="font-weight:bold;">'+p1.name+'</div>';
+                        html += '<div style="color:#667eea;">⚔️ '+p1.power+'</div>';
+                        html += '<div style="color:#9B59B6;font-size:12px;">⬆️ 主宠物</div>';
+                        html += '<button onclick="synthPet1=null;showTabSynth()" style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E74C3C;background:#fff;color:#E74C3C;cursor:pointer;font-size:11px;">取消</button>';
+                        html += '</div>';
+                    }
+                } else {
+                    html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:2px dashed #ccc;min-width:100px;"><div style="font-size:30px;">➕</div><div style="color:#999;font-size:12px;">选择主宠物</div></div>';
+                }
+                // Plus sign
+                html += '<div style="font-size:36px;color:#667eea;font-weight:bold;">+</div>';
+                // Pet 2 slot
+                if (synthPet2) {
+                    const p2 = gameData.pets.find(p => p.uid === synthPet2);
+                    if (p2) {
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #9B59B6;">';
+                        html += '<img src="images/'+p2.img+'" style="width:70px;height:70px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                        html += '<div style="font-weight:bold;">'+p2.name+'</div>';
+                        html += '<div style="color:#9B59B6;">⚔️ '+p2.power+'</div>';
+                        html += '<div style="color:#667eea;font-size:12px;">⬆️ 副宠物</div>';
+                        html += '<button onclick="synthPet2=null;showTabSynth()" style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E74C3C;background:#fff;color:#E74C3C;cursor:pointer;font-size:11px;">取消</button>';
+                        html += '</div>';
+                    }
+                } else {
+                    html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:2px dashed #ccc;min-width:100px;"><div style="font-size:30px;">➕</div><div style="color:#999;font-size:12px;">选择副宠物</div></div>';
+                }
+                // Equals + result preview
+                if (synthPet1 && synthPet2) {
+                    const p1 = gameData.pets.find(p => p.uid === synthPet1);
+                    const p2 = gameData.pets.find(p => p.uid === synthPet2);
+                    if (p1 && p2) {
+                        const avgPower = Math.round(Math.max(p1.power, p2.power) * 1.3);
+                        const sameType = p1.profession === p2.profession;
+                        html += '<div style="font-size:36px;color:#FFD700;font-weight:bold;">=</div>';
+                        html += '<div style="text-align:center;padding:10px;background:white;border-radius:10px;border:3px solid #FFD700;">';
+                        html += '<div style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto;">🥚</div>';
+                        html += '<div style="font-weight:bold;color:#667eea;">???</div>';
+                        html += '<div style="color:#FFD700;">⚔️ ~'+avgPower+'</div>';
+                        if (sameType) {
+                            html += '<div style="color:#2ECC71;font-size:12px;">同类合成 ×2倍补</div>';
+                        }
+                        html += '</div>';
+                    }
+                }
+                html += '</div>';
+            } else {
+                html += '<div style="text-align:center;color:#999;padding:20px;"><div style="font-size:48px;">🔬</div><p>请从下方选择两只宠物进行合成</p></div>';
+            }
+            html += '</div>';
+
+            // Synthesize button (prominent)
+            const canSynth = synthPet1 && synthPet2;
+            const p1check = canSynth ? gameData.pets.find(p => p.uid === synthPet1) : null;
+            const p2check = canSynth ? gameData.pets.find(p => p.uid === synthPet2) : null;
+            const sameProfession = p1check && p2check && p1check.profession === p2check.profession;
+            html += '<div style="text-align:center;margin-bottom:20px;">';
+            if (canSynth && p1check && p2check) {
+                if (!sameProfession) {
+                    html += '<div style="color:#E74C3C;margin-bottom:10px;">⚠️ 非同类合成成功率较低，建议选择同类宠物</div>';
+                } else {
+                    html += '<div style="color:#2ECC71;margin-bottom:10px;">✅ 同类合成，成功率提升！</div>';
+                }
+                html += '<button onclick="doSynthesis()" style="padding:15px 40px;border:none;border-radius:10px;background:linear-gradient(135deg,#FFD700,#FFA500);color:white;font-size:18px;font-weight:bold;cursor:pointer;box-shadow:0 5px 15px rgba(255,165,0,0.4);">🔬 确认合成 (100 PG)</button>';
+            } else {
+                html += '<button disabled style="padding:15px 40px;border:none;border-radius:10px;background:#ccc;color:white;font-size:18px;cursor:not-allowed;">🔬 请先选择两只宠物</button>';
+            }
+            html += '</div>';
+
+            // Pet selection grid (filtered)
+            const filteredPets = synthFilter === 'all' ? gameData.pets : gameData.pets.filter(p => p.profession === synthFilter);
+            if (filteredPets.length === 0) {
+                html += '<div style="text-align:center;color:#999;padding:30px;">该分类下没有宠物</div>';
+            } else {
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">';
+                filteredPets.forEach(pet => {
+                    const isS1 = pet.uid === synthPet1;
+                    const isS2 = pet.uid === synthPet2;
+                    html += '<div class="pet-card rarity-'+pet.rarity+(isS1||isS2?' selected':'')+'" onclick="selectSynthPet('+pet.uid+')" style="cursor:pointer;">';
+                    html += '<img src="images/'+pet.img+'" style="width:100%;height:100px;object-fit:contain;" onerror="this.style.display=\'none\'">';
+                    html += '<div class="pet-name">'+pet.name+'</div>';
+                    html += '<div style="font-size:11px;color:#999;">'+pet.profession+'</div>';
+                    html += '<div class="pet-power">⚔️ '+pet.power+'</div>';
+                    if (isS1) html += '<div style="color:#667eea;font-weight:bold;font-size:12px;">⬆️ 主</div>';
+                    if (isS2) html += '<div style="color:#9B59B6;font-weight:bold;font-size:12px;">⬆️ 副</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            document.getElementById('content').innerHTML = html;
+        } catch(e) {
+            console.error('[ERROR] showTabSynth:', e);
+            document.getElementById('content').innerHTML = '<div style="text-align:center;padding:50px;"><h3>合成系统加载失败</h3><p>'+e.message+'</p></div>';
+        }
+    }
+
+    function selectSynthPet(uid) {
+        console.log('[DEBUG] selectSynthPet:', uid);
+        try {
+            const pet = gameData.pets.find(p => p.uid === uid);
+            if (!pet) return;
+
+            // If clicking already selected pet, deselect it
+            if (synthPet1 === uid) { synthPet1 = null; showTabSynth(); return; }
+            if (synthPet2 === uid) { synthPet2 = null; showTabSynth(); return; }
+
+            // Auto-select: if first slot empty, fill it; else if second empty, fill with same profession
+            if (!synthPet1) {
+                synthPet1 = uid;
+                // Auto-filter to same profession for second pick
+                synthFilter = pet.profession;
+            } else if (!synthPet2) {
+                synthPet2 = uid;
+            } else {
+                // Both filled, reset with new selection as pet1
+                synthPet1 = uid;
+                synthPet2 = null;
+                synthFilter = pet.profession;
+            }
+            showTabSynth();
+        } catch(e) {
+            console.error('[ERROR] selectSynthPet:', e);
+        }
+    }
+
+    function doSynthesis() {
+        console.log('[DEBUG] doSynthesis start');
+        try {
+            if (!synthPet1 || !synthPet2) return showToast('请选择两只宠物！');
+            if (gameData.pg < 100) return showToast('PG不足！需覀100 PG');
+
+            const p1 = gameData.pets.find(p => p.uid === synthPet1);
+            const p2 = gameData.pets.find(p => p.uid === synthPet2);
+            if (!p1 || !p2) return showToast('宠物不存在！');
+
+            const sameProfession = p1.profession === p2.profession;
+            // Same profession: 80% upgrade rarity, 20% same; Different: 30% upgrade, 70% downgrade
+            const upgradeChance = sameProfession ? 0.8 : 0.3;
+            const didUpgrade = Math.random() < upgradeChance;
+
+            const rarityOrder = ['N', 'G3', 'G2', 'S', 'S+', 'G0'];
+            let newRarity;
+            if (didUpgrade) {
+                const idx = rarityOrder.indexOf(p1.rarity);
+                newRarity = idx < rarityOrder.length - 1 ? rarityOrder[idx + 1] : 'G0';
+            } else {
+                newRarity = p1.rarity;
+            }
+
+            const newPower = Math.round(Math.max(p1.power, p2.power) * (sameProfession ? 1.5 : 1.2));
+            const newLevel = Math.max(p1.level || 1, p2.level || 1) + 1;
+
+            // Remove old pets
+            gameData.pets = gameData.pets.filter(p => p.uid !== synthPet1 && p.uid !== synthPet2);
+            gameData.pg -= 100;
+
+            // Create new pet - inherit profession from parents
+            const newPet = Object.assign({}, p1, {
+                uid: Date.now(),
+                rarity: newRarity,
+                power: newPower,
+                level: newLevel,
+                exp: 0,
+                hatchCount: 0,
+                lastHatchTime: 0,
+                status: { hunger: 100, health: 100, happiness: 100, lastDecay: Date.now() }
+            });
+
+            gameData.pets.push(newPet);
+            synthPet1 = null;
+            synthPet2 = null;
+
+            saveGame();
+            updateBalances();
+
+            // Show result
+            const rarityNames = {'N':'普通','G3':'第三代','G2':'第二代','S':'传说','S+':'至尊','G0':'创世'};
+            let msg = '🔬 合成成功！';
+            msg += '\n新宠物: '+newPet.name+' ('+rarityNames[newRarity]+')';
+            msg += '\n战力: '+newPower+' | 等级: Lv.'+newLevel;
+            if (didUpgrade) msg += '\n🔥 稀有度提升！';
+            showToast(msg);
+
+            showTabSynth();
+        } catch(e) {
+            console.error('[ERROR] doSynthesis:', e);
+            showToast('合成失败，请重试');
+        }
+    }
 </script>
 </body>
 </html>
