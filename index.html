@@ -2170,6 +2170,21 @@ function showTab(tab, evt) {
         saveGame();
     }
 
+    // Toast notification
+    function showToast(msg) {
+        let t = document.getElementById('toastNotify');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'toastNotify';
+            t.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;font-size:14px;transition:opacity 0.3s;pointer-events:none;';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.opacity = '1';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(function(){ t.style.opacity = '0'; }, 2000);
+    }
+
     function initPetStatus() {
         gameData.pets.forEach(pet => {
             if (!pet.status) pet.status = { hunger: 80, health: 80, happiness: 80, lastDecay: Date.now() };
@@ -2190,7 +2205,7 @@ function showTab(tab, evt) {
         }
         saveGame();
         updateBalances();
-        showToast('🍗 喂养成功！饥饿值+30');
+        showToast('🍗 喂养成功！饥饿值+30'); showPetStatusModal(uid); showCareTab();
         showCareTab();
     
             } catch(e) {
@@ -2213,7 +2228,7 @@ function showTab(tab, evt) {
         }
         saveGame();
         updateBalances();
-        showToast('🧹 清洁成功！健康值+25');
+        showToast('🧹 清洁成功！健康值+25'); showPetStatusModal(uid); showCareTab();
         showCareTab();
     
             } catch(e) {
@@ -2236,7 +2251,7 @@ function showTab(tab, evt) {
         }
         saveGame();
         updateBalances();
-        showToast('🎾 玩耍成功！快乐值+35');
+        showToast('🎾 玩耍成功！快乐值+35'); showPetStatusModal(uid); showCareTab();
         showCareTab();
     
             } catch(e) {
