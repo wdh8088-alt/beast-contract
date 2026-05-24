@@ -2171,6 +2171,65 @@ function showTab(tab, evt) {
     }
 
     // Toast notification
+    function showCareItemModal(type, uid) {
+        if (!gameData.careItems) gameData.careItems = {food:0,clean:0,toy:0};
+        var items = {
+            food:[{name:"普通粮食",icon:"🍚",price:20,hunger:30,exp:5},{name:"高级粮食",icon:"🍖",price:50,hunger:60,exp:15},{name:"豪华大餐",icon:"🥩",price:100,hunger:100,exp:30}],
+            clean:[{name:"普通清洁",icon:"🧴",price:20,health:30,exp:5},{name:"高级清洁",icon:"🧹",price:50,health:60,exp:15},{name:"SPA护理",icon:"💆",price:100,health:100,exp:30}],
+            toy:[{name:"普通玩具",icon:"🎾",price:20,happy:30,exp:5},{name:"高级玩具",icon:"🧸",price:50,happy:60,exp:15},{name:"豪华游乐",icon:"🎡",price:100,happy:100,exp:30}]
+        };
+        var typeNames={food:"喂养",clean:"清洁",toy:"玩耍"};
+        var typeIcons={food:"🍗",clean:"🧹",toy:"🎾"};
+        var statNames={food:"饥饿",clean:"健康",toy:"快乐"};
+        var list=items[type];
+        var owned=gameData.careItems[type]||0;
+        var h="<div style=\"padding:20px;\">";
+        h+="<h3 style=\"text-align:center;margin-bottom:15px;\">"+typeIcons[type]+" "+typeNames[type]+" - 选择用品</h3>";
+        h+="<p style=\"text-align:center;color:#666;font-size:13px;\">已有用品: "+owned+"个 | <span style=\"color:#3498DB;cursor:pointer;\" onclick=\"closePetStatusModal();showTab('shop');\">去商店购买</span></p>";
+        h+="<div style=\"margin-top:15px;\">";
+        for(var i=0;i<list.length;i++){
+            var it=list[i];
+            var bg=type==="food"?"#27AE60":type==="clean"?"#3498DB":"#E74C3C";
+            var sv=type==="food"?it.hunger:type==="clean"?it.health:it.happy;
+            h+="<div style=\"background:"+bg+";padding:15px;border-radius:12px;margin-bottom:12px;color:white;\">";
+            h+="<div style=\"display:flex;justify-content:space-between;align-items:center;\">";
+            h+="<div><span style=\"font-size:24px;\">"+it.icon+"</span> <strong>"+it.name+"</strong><br>";
+            h+="<span style=\"font-size:12px;\">"+statNames[type]+"+"+sv+" | 经验+"+it.exp+"</span></div>";
+            h+="<div style=\"text-align:right;\"><div style=\"font-size:12px;margin-bottom:5px;\">"+it.price+" PG</div>";
+            h+="<button style=\"background:white;color:"+bg+";padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;\" onclick=\"useCareItemDirect('"+type+"',"+uid+","+i+")\">使用</button>";
+            h+="</div></div></div>";
+        }
+        h+="</div><div style=\"text-align:center;margin-top:15px;\"><button class=\"btn\" onclick=\"closePetStatusModal()\" style=\"padding:8px 24px;\">关闭</button></div></div>";
+        document.getElementById("petStatusContent").innerHTML=h;
+        document.getElementById("petStatusModal").style.display="block";
+    }
+
+    function useCareItemDirect(type, uid, tier) {
+        var items={
+            food:[{hunger:30,exp:5,price:20},{hunger:60,exp:15,price:50},{hunger:100,exp:30,price:100}],
+            clean:[{health:30,exp:5,price:20},{health:60,exp:15,price:50},{health:100,exp:30,price:100}],
+            toy:[{happy:30,exp:5,price:20},{happy:60,exp:15,price:50},{happy:100,exp:30,price:100}]
+        };
+        var it=items[type][tier];
+        if(gameData.pg<it.price){showToast("PG不足！需要"+it.price+" PG");return;}
+        gameData.pg-=it.price;
+        var pet=gameData.pets.find(function(p){return p.uid===uid;});
+        if(!pet){showToast("宠物不存在！");return;}
+        if(!pet.status) pet.status={hunger:80,health:80,happiness:80};
+        var tn={food:"喂养",clean:"清洁",toy:"玩耍"};
+        var sn={food:"饥饿",clean:"健康",toy:"快乐"};
+        var sv=type==="food"?it.hunger:type==="clean"?it.health:it.happy;
+        if(type==="food") pet.status.hunger=Math.min(100,pet.status.hunger+it.hunger);
+        else if(type==="clean") pet.status.health=Math.min(100,pet.status.health+it.health);
+        else pet.status.happiness=Math.min(100,pet.status.happiness+it.happy);
+        pet.exp=(pet.exp||0)+it.exp;
+        checkLevelUp(pet);
+        saveGame();updateBalances();
+        showToast(tn[type]+"成功！"+sn[type]+"+"+sv);
+        closePetStatusModal();
+        showCareTab();
+    }
+
     function showToast(msg) {
         let t = document.getElementById('toastNotify');
         if (!t) {
@@ -2309,9 +2368,9 @@ function showTab(tab, evt) {
                 <div class="progress-bar"><div class="progress-fill" style="width:${s.happiness}%;background:${happyColor};"></div></div>
                 <div style="font-size:11px;color:#666;">😊 快乐: ${Math.round(s.happiness)}%</div>
                 <div style="margin-top:8px; display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="feedPet(${pet.uid})">🍗 喂</button>
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="cleanPet(${pet.uid})">🧹 清洁</button>
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="playWithPet(${pet.uid})">🎾 玩</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="showCareItemModal('food', ${pet.uid})">🍗 喂</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="showCareItemModal('clean', ${pet.uid})">🧹 清洁</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="showCareItemModal('toy', ${pet.uid})">🎾 玩</button>
                 </div>
             </div>`;
         });
