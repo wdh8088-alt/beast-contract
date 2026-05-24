@@ -638,11 +638,12 @@
         }
 
         // ===== V2.0 Dungeon System =====
-        var _dPet = null, _dPower = 0, _waves = [], _waveIdx = 0, _zombies = [], _skillCd = 0;
-        var _dungeonLog = [], _reward = null;
-        var _atkTimer = null, _zTimer = null;
-        var _petHp = 100, _petMaxHp = 100, _petX = 40, _petY = 100;
-        var _subTab = 'list', _fashionTab = 'list', _selectCb = null;
+        // Reset V2 dungeon state (variables declared above with let)
+        _dPet = null; _dPower = 0; _waves = []; _waveIdx = 0; _zombies = []; _skillCd = 0;
+        _dungeonLog = []; _reward = null;
+        _atkTimer = null; _zTimer = null;
+        _petHp = 100; _petMaxHp = 100; _petX = 40; _petY = 100;
+        _subTab = 'list'; _fashionTab = 'list'; _selectCb = null;
 
         function showDungeon(content) {
             if (dungeonState.dungeonActive) { renderBattleField(content); return; }
