@@ -940,7 +940,7 @@
             var h = '';
             for (var i = 0; i < gameData.pets.length; i++) {
                 var p = gameData.pets[i];
-                h += '<div class="select-item" onclick="onSelectPetIdx(${i})">' + getEmoji(p.id) + ' ' + p.name + ' (Lv.' + (p.level || 1) + ')</div>';
+                h += '<div class="select-item" onclick="onSelectPetIdx(' + i + ')">' + getEmoji(p.id) + ' ' + p.name + ' (Lv.' + (p.level || 1) + ')</div>';
             }
             list.innerHTML = h;
             document.getElementById('selectPetModal').classList.add('show');
@@ -1601,7 +1601,7 @@ function showTab(tab, evt) {
             html += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px;">';
             gameData.pets.forEach(function(pet) {
                 var isBattlePet = battleState && battleState.playerPet && battleState.playerPet.uid === pet.uid;
-                html += '<div onclick="startBattle(${pet.uid})" style="background:' + (isBattlePet ? 'linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'white;') + 'border-radius:12px;padding:12px;width:130px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;transition:0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+                html += '<div onclick="startBattle(' + pet.uid + ')" style="background:' + (isBattlePet ? 'linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'white;') + 'border-radius:12px;padding:12px;width:130px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;transition:0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
                 html += '<div style="font-size:40px;margin-bottom:5px;"><img src="' + (('images/' + pet.img) || ('images/' + pet.id + '.png')) + '" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display=\'none\'"></div>';
                 html += '<div style="font-weight:bold;font-size:13px;">' + pet.name + '</div>';
                 html += '<div style="font-size:11px;color:' + (isBattlePet ? 'rgba(255,255,255,0.8)' : '#999') + ';">⚡' + pet.power + ' | ' + (pet.profession||'无') + '</div>';
@@ -2064,7 +2064,7 @@ function showTab(tab, evt) {
             html += '<div class="pet-grid">';
             friends.forEach((f, idx) => {
                 const canSteal = Math.random() < 0.7;
-                html += '<div class="pet-card" onclick="visitFriendHouse(${idx})" style="cursor:pointer;">';
+                html += '<div class="pet-card" onclick="visitFriendHouse(' + idx + ')" style="cursor:pointer;">';
                 html += '<div style="font-size:60px;">🏠</div>';
                 html += '<div class="pet-name">' + f.name + '的窝</div>';
                 html += '<div style="font-size:12px;color:#666;">宠物: ' + f.pets + '只 | 蛋: ' + f.eggs + '个</div>';
@@ -2101,7 +2101,7 @@ function showTab(tab, evt) {
             const eggCount = Math.floor(Math.random() * 3) + 2;
             for (let i = 0; i < eggCount; i++) {
                 const success = i === 0; // First egg is stealable
-                html += '<div onclick="tryStealEgg(${friendIdx}, ${i})" style="cursor:pointer;text-align:center;padding:20px;background:#f8f9fa;border-radius:10px;' + (success ? '' : 'opacity:0.5;') + '">';
+                html += '<div onclick="tryStealEgg(' + friendIdx + ', ' + i + ')" style="cursor:pointer;text-align:center;padding:20px;background:#f8f9fa;border-radius:10px;' + (success ? '' : 'opacity:0.5;') + '">';
                 html += '<div style="font-size:60px;">🥚</div>';
                 html += '<div style="font-size:12px;color:#666;">蛋 ' + (i+1) + '</div>';
                 if (success) {
@@ -2428,7 +2428,7 @@ function showTab(tab, evt) {
                 filteredPets.forEach(pet => {
                     const isS1 = pet.uid === synthPet1;
                     const isS2 = pet.uid === synthPet2;
-                    html += '<div class="pet-card rarity-'+pet.rarity+(isS1||isS2?' selected':'')+'" onclick="selectSynthPet(${pet.uid})" style="cursor:pointer;">';
+                    html += '<div class="pet-card rarity-'+pet.rarity+(isS1||isS2?' selected':'')+'" onclick="selectSynthPet(' + pet.uid + ')" style="cursor:pointer;">';
                     html += '<img src="images/'+pet.img+'" style="width:100%;height:100px;object-fit:contain;" onerror="this.style.display=\'none\'">';
                     html += '<div class="pet-name">'+pet.name+'</div>';
                     html += '<div style="font-size:11px;color:#999;">'+pet.profession+'</div>';
