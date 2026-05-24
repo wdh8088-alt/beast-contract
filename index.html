@@ -131,6 +131,10 @@
         .cooldown-timer { color: #e74c3c; font-size: 12px; margin-top: 5px; }
     
         .pet-card .actions { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+        /* Pet detail modal */
+        #petDetailModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; }
+        #petDetailModal.show { display: flex !important; }
 </style>
 </head>
 <body>
@@ -2363,51 +2367,11 @@ function showTab(tab, evt) {
         }
 
     function cleanPet(uid) {
-            try {
-                console.log('[DEBUG] cleanPet 开始执行');
-
-        if (gameData.pg < 15) return showToast('PG不足！需要15 PG');
-        gameData.pg -= 15;
-        const pet = gameData.pets.find(p => p.uid === uid);
-        if (pet && pet.status) {
-            pet.status.health = Math.min(100, pet.status.health + 25);
-            pet.exp = (pet.exp || 0) + 5;
-            checkLevelUp(pet);
+            showCareItemModal('clean', uid);
         }
-        saveGame();
-        updateBalances();
-        showToast('🧹 清洁成功！健康值+25'); showPetStatusModal(uid); showCareTab();
-        showCareTab();
-    
-            } catch(e) {
-                console.error('[ERROR] cleanPet:', e);
-                showToast('操作失败，请刷新页面重试');
-            }
-}
-
     function playWithPet(uid) {
-            try {
-                console.log('[DEBUG] playWithPet 开始执行');
-
-        if (gameData.pg < 10) return showToast('PG不足！需要10 PG');
-        gameData.pg -= 10;
-        const pet = gameData.pets.find(p => p.uid === uid);
-        if (pet && pet.status) {
-            pet.status.happiness = Math.min(100, pet.status.happiness + 35);
-            pet.exp = (pet.exp || 0) + 5;
-            checkLevelUp(pet);
+            showCareItemModal('toy', uid);
         }
-        saveGame();
-        updateBalances();
-        showToast('🎾 玩耍成功！快乐值+35'); showPetStatusModal(uid); showCareTab();
-        showCareTab();
-    
-            } catch(e) {
-                console.error('[ERROR] playWithPet:', e);
-                showToast('操作失败，请刷新页面重试');
-            }
-}
-
     function stealEgg() {
             try {
                 console.log('[DEBUG] stealEgg 开始执行');
