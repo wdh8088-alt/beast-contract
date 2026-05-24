@@ -2337,7 +2337,7 @@ function showTab(tab, evt) {
             const labels = {'all':'全部', '功夫':'功夫', '厨师':'厨师', '魔法':'魔法', '牛仔':'牛仔', '忍者':'忍者', '海盗':'海盗'};
             professions.forEach(p => {
                 const active = synthFilter === p;
-                html += `<button onclick="synthFilter='${p}';showTabSynth()" style="padding:8px 16px;border-radius:20px;border:2px solid '+(active?'#667eea':'#ddd')+';background:'+(active?'#667eea':'white')+';color:'+(active?'white':'#333')+';cursor:pointer;font-size:14px;font-weight:bold;">'+labels[p]+'</button>`;
+                html += `<button onclick="synthFilter='${p}';showTabSynth()" style="padding:8px 16px;border-radius:20px;border:2px solid '+(active?'#667eea':'#ddd')+';background:'+(active?'#667eea':'white')+';color:'+(active?'white':'#333')+';cursor:pointer;font-size:14px;font-weight:bold;">${labels[p]}</button>`;
             });
             html += '</div>';
 
