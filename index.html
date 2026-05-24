@@ -867,17 +867,119 @@
             html += '<div class="legend-row"><span style="color:#CCC">\u767D\u88C5 +5~15</span><span style="color:#3498DB">\u84DD\u88C5 +15~25</span><span style="color:#9B59B6">\u7D2B\u88C5 +35~50</span><span style="color:#E74C3C">\u7EA2\u88C5 +70~100</span><span style="color:#FF8C00">\u6A59\u88C5 +120~195</span></div>';
             content.innerHTML = html;
         }
+
+        // 装备替换确认对话框（DOM操作，避免引号嵌套问题）
+        function showEquipConfirmModal(oldEq, newEq, pet, slot, onConfirm) {
+            var modal = document.getElementById('equipConfirmModal');
+            var body = document.getElementById('equipConfirmModalBody');
+            if (!modal || !body) { console.log('modal not found'); return; }
+            var slotNames = { weapon: '武器', armor: '防具', accessory: '饰品' };
+            // 清空
+            while (body.firstChild) body.removeChild(body.firstChild);
+            // 标题
+            var title = document.createElement('div');
+            title.style.cssText = 'font-size:14px;font-weight:bold;margin-bottom:12px;text-align:center;';
+            title.textContent = '确认替换装备';
+            body.appendChild(title);
+            // flex容器
+            var flex = document.createElement('div');
+            flex.style.cssText = 'display:flex;gap:12px;align-items:stretch;';
+            // 旧装备卡片
+            var oldCard = document.createElement('div');
+            oldCard.style.cssText = 'flex:1;border:1px solid #e74c3c;border-radius:6px;padding:8px;text-align:center;background:#fdf2f2;';
+            var oldLabel = document.createElement('div');
+            oldLabel.style.cssText = 'font-size:11px;color:#e74c3c;margin-bottom:6px;';
+            oldLabel.textContent = '当前佩戴';
+            oldCard.appendChild(oldLabel);
+            var oldName = document.createElement('div');
+            oldName.style.cssText = 'font-size:12px;font-weight:bold;';
+            oldName.textContent = oldEq ? oldEq.name : '无';
+            oldCard.appendChild(oldName);
+            var oldSlot = document.createElement('div');
+            oldSlot.style.cssText = 'font-size:11px;color:' + (oldEq ? oldEq.c : '#999') + ';margin-top:4px;';
+            oldSlot.textContent = oldEq ? slotNames[slot] : '';
+            oldCard.appendChild(oldSlot);
+            var oldB = document.createElement('div');
+            oldB.style.cssText = 'font-size:11px;color:#e67e22;margin-top:4px;';
+            oldB.textContent = '+' + (oldEq ? oldEq.b : '0');
+            oldCard.appendChild(oldB);
+            flex.appendChild(oldCard);
+            // 新装备卡片
+            var newCard = document.createElement('div');
+            newCard.style.cssText = 'flex:1;border:1px solid #27ae60;border-radius:6px;padding:8px;text-align:center;background:#f0fdf4;';
+            var newLabel = document.createElement('div');
+            newLabel.style.cssText = 'font-size:11px;color:#27ae60;margin-bottom:6px;';
+            newLabel.textContent = '替换后';
+            newCard.appendChild(newLabel);
+            var newName = document.createElement('div');
+            newName.style.cssText = 'font-size:12px;font-weight:bold;';
+            newName.textContent = newEq.name;
+            newCard.appendChild(newName);
+            var newSlot = document.createElement('div');
+            newSlot.style.cssText = 'font-size:11px;color:' + newEq.c + ';margin-top:4px;';
+            newSlot.textContent = slotNames[slot];
+            newCard.appendChild(newSlot);
+            var newB = document.createElement('div');
+            newB.style.cssText = 'font-size:11px;color:#e67e22;margin-top:4px;';
+            newB.textContent = '+' + newEq.b;
+            newCard.appendChild(newB);
+            flex.appendChild(newCard);
+            body.appendChild(flex);
+            // 提示
+            var hint = document.createElement('div');
+            hint.style.cssText = 'margin-top:12px;font-size:11px;color:#888;text-align:center;';
+            hint.textContent = '替换后旧装备将返回背包';
+            body.appendChild(hint);
+            // 按钮行
+            var btnRow = document.createElement('div');
+            btnRow.style.cssText = 'margin-top:12px;display:flex;gap:8px;justify-content:center;';
+            var btnOk = document.createElement('button');
+            btnOk.className = 'btn btn-sm btn-green';
+            btnOk.textContent = '确认替换';
+            btnOk.onclick = function() {
+                modal.style.display = 'none';
+                if (typeof onConfirm === 'function') onConfirm();
+            };
+            btnRow.appendChild(btnOk);
+            var btnCancel = document.createElement('button');
+            btnCancel.className = 'btn btn-sm';
+            btnCancel.style.cssText = 'background:#CCC;color:#333;';
+            btnCancel.textContent = '取消';
+            btnCancel.onclick = function() {
+                modal.style.display = 'none';
+            };
+            btnRow.appendChild(btnCancel);
+            body.appendChild(btnRow);
+            modal.style.display = 'flex';
+        }
+
+        function closeEquipConfirmModal() {
+            var modal = document.getElementById('equipConfirmModal');
+            if (modal) modal.style.display = 'none';
+        }
+
         function doEquipItem(eqUid) {
             var eq = dungeonState.equip.find(function(e) { return e.uid === eqUid; });
             if (!eq || !gameData.pets.length) { return; }
-            showSelectPet('\u9009\u62E9\u88C5\u5907\u5230\u54EA\u4E2A\u5BA0\u7269', function(petIdx) {
-                dungeonState.equip = dungeonState.equip.filter(function(e) { return e.uid !== eqUid; });
+            showSelectPet('选择装备到哪个宠物', function(petIdx) {
                 if (!gameData.pets[petIdx].equip) gameData.pets[petIdx].equip = { weapon: null, armor: null, accessory: null };
                 var oldEquip = gameData.pets[petIdx].equip[eq.slot];
-                if (oldEquip) { dungeonState.equip.push(oldEquip); }
-                gameData.pets[petIdx].equip[eq.slot] = eq;
-                saveGame(); saveDungeonState(); updateBalances();
-                showTab('equip');
+                if (oldEquip) {
+                    showEquipConfirmModal(oldEquip, eq, gameData.pets[petIdx], eq.slot, function() {
+                        dungeonState.equip.push(oldEquip);
+                        dungeonState.equip = dungeonState.equip.filter(function(e) { return e.uid !== eqUid; });
+                        gameData.pets[petIdx].equip[eq.slot] = eq;
+                        saveGame(); saveDungeonState(); updateBalances();
+                        showToast('替换成功！');
+                        showTab('equip');
+                    });
+                } else {
+                    dungeonState.equip = dungeonState.equip.filter(function(e) { return e.uid !== eqUid; });
+                    gameData.pets[petIdx].equip[eq.slot] = eq;
+                    saveGame(); saveDungeonState(); updateBalances();
+                    showToast('装备成功！');
+                    showTab('equip');
+                }
             });
         }
         function doUnequip(pUid, slot) {
@@ -2699,7 +2801,6 @@ function showTab(tab, evt) {
     }
 window.addEventListener('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
 </script>
-
 <div id="petStatusModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;"><div id="petStatusContent" style="background:white;border-radius:20px;padding:30px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;position:relative;"></div></div>
 </body>
 </html>
