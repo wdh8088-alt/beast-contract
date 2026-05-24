@@ -856,7 +856,7 @@
                         html += '<div class="epet"><div class="epet-name">' + pet.name + ' (\u2694\uFE0F' + calcPower(pet) + ')</div>';
                         SLOTS.forEach(function(s) {
                             if (pet.equip[s]) {
-                                html += `<div class="epet-slot" style="border-color:${pet.equip[s].c}">${SLOT_N[s]}: ${pet.equip[s].name}(+${pet.equip[s].b}) <span style="color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px;" onclick="doUnequip(${pet.uid},'${s}')">[卸下]</span></div>`;
+                                html += `<div class="epet-slot" style="border-color:${(pet.equip[s]?pet.equip[s].c:"#999")}">${SLOT_N[s]}: ${(pet.equip[s]?pet.equip[s].name:"?")}(+${(pet.equip[s]?(pet.equip[s].b):"?")}) <span style="color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px;" onclick="doUnequip(${pet.uid},'${s}')">[卸下]</span></div>`;
                             }
                         });
                         html += '</div>';
@@ -873,6 +873,8 @@
             showSelectPet('\u9009\u62E9\u88C5\u5907\u5230\u54EA\u4E2A\u5BA0\u7269', function(petIdx) {
                 dungeonState.equip = dungeonState.equip.filter(function(e) { return e.uid !== eqUid; });
                 if (!gameData.pets[petIdx].equip) gameData.pets[petIdx].equip = { weapon: null, armor: null, accessory: null };
+                var oldEquip = gameData.pets[petIdx].equip[eq.slot];
+                if (oldEquip) { dungeonState.equip.push(oldEquip); }
                 gameData.pets[petIdx].equip[eq.slot] = eq;
                 saveGame(); saveDungeonState(); updateBalances();
                 showTab('equip');
