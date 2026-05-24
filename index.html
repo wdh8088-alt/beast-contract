@@ -856,7 +856,7 @@
                         html += '<div class="epet"><div class="epet-name">' + pet.name + ' (\u2694\uFE0F' + calcPower(pet) + ')</div>';
                         SLOTS.forEach(function(s) {
                             if (pet.equip[s]) {
-                                html += `<div class="epet-slot" style="border-color:' + pet.equip[s].c + '">' + SLOT_N[s] + ': ' + pet.equip[s].name + '(+' + pet.equip[s].b + ') <span style="color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px;" onclick="doUnequip(${pet.uid},'${s}')">[\u5378\u4E0B]</span></div>`;
+                                html += `<div class="epet-slot" style="border-color:${pet.equip[s].c}">${SLOT_N[s]}: ${pet.equip[s].name}(+${pet.equip[s].b}) <span style="color:#e74c3c;cursor:pointer;margin-left:10px;font-size:11px;" onclick="doUnequip(${pet.uid},'${s}')">[卸下]</span></div>`;
                             }
                         });
                         html += '</div>';
@@ -1843,6 +1843,7 @@ function showTab(tab, evt) {
             gameData.pets.push(pet);
             updateBalances();
             saveGame();
+        showToast("恭喜孵化成功！");
             showResult(pet, pet.rarity === 'G2' ? 'g2' : 'g3');
         }
 
@@ -1864,6 +1865,7 @@ function showTab(tab, evt) {
             gameData.pets.push(pet);
             updateBalances();
             saveGame();
+        showToast("恭喜获得创世宠物！");
             showResult(pet, isGenesis ? 'genesis' : 'g2');
         }
 
@@ -1879,6 +1881,7 @@ function showTab(tab, evt) {
             gameData.pets.push(pet);
             updateBalances();
             saveGame();
+        showToast("恭喜获得至尊宠物！");
             showResult(pet, 'supreme');
         }
 
@@ -1894,6 +1897,7 @@ function showTab(tab, evt) {
             gameData.pets.push(pet);
             updateBalances();
             saveGame();
+        showToast("恭喜获得传说宠物！");
             showResult(pet, 'legendary');
         }
 
