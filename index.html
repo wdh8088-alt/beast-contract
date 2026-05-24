@@ -134,7 +134,6 @@
 
         /* Pet detail modal */
         #petDetailModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; }
-        #petDetailModal.show { display: flex !important; }
 </style>
 </head>
 <body>
@@ -1141,6 +1140,7 @@ function showTab(tab, evt) {
 
         // 通过UID显示宠物详情
         function showPetDetailByUid(uid) {
+console.log('[DEBUG] showPetDetailByUid called, uid=' + uid);
             const idx = gameData.pets.findIndex(p => p.uid === uid);
             if (idx >= 0) showPetDetail(idx);
         }
@@ -1422,6 +1422,7 @@ function showTab(tab, evt) {
         // 显示宠物详情弹窗
         let detailPetIdx = null;
         function showPetDetail(idx) {
+console.log('[DEBUG] showPetDetail called, idx=' + idx + ', modal=' + (modal?'found':'NULL'));
             detailPetIdx = idx;
             const pet = gameData.pets[idx];
             const modal = document.getElementById('petDetailModal');
@@ -1478,7 +1479,7 @@ function showTab(tab, evt) {
                 <div style="font-size: 13px; color: #666;">${getSkills(pet.profession, pet.rarity)}</div>
             `;
             
-            modal.classList.add('show');
+            modal.style.display = 'flex';
         }
 
         // 获取代数文本
@@ -1508,7 +1509,7 @@ function showTab(tab, evt) {
 
         // 关闭宠物详情
         function closePetDetail() {
-            document.getElementById('petDetailModal').classList.remove('show');
+            document.getElementById('petDetailModal').style.display = 'none';
             detailPetIdx = null;
         }
 
@@ -2343,6 +2344,7 @@ function showTab(tab, evt) {
     }
 
     function showToast(msg) {
+console.log('[DEBUG] showToast: ' + msg);
         let t = document.getElementById('toastNotify');
         if (!t) {
             t = document.createElement('div');
