@@ -1116,7 +1116,7 @@ function showTab(tab, evt) {
             html += '</div>';
             
             // 筛选宠物
-            const filteredPets = currentFilter === 'all' ? gameData.pets : gameData.pets.filter(p => p.rarity === currentFilter);
+            const filteredPets = (currentFilter === 'all' ? gameData.pets : gameData.pets.filter(p => p && p.rarity === currentFilter)).filter(p => p != null);
             
             if (filteredPets.length === 0) {
                 html += '<div style="text-align:center;padding:50px;color:#999;">';
@@ -1126,6 +1126,7 @@ function showTab(tab, evt) {
             } else {
                 html += '<div class="pet-grid">';
                 filteredPets.forEach((pet, idx) => {
+                    if (!pet) return;
                     const rarityClass = 'rarity-' + pet.rarity;
                     html += `
                         <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(${pet.uid})">
