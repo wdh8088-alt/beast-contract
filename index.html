@@ -438,7 +438,7 @@
         let currentFilter = 'all';
 
         // 初始化
-        function init() { console.log("init() called");
+        function init() { 
             // 读取主存档（恢复登录状态和游戏数据）
             const saved = localStorage.getItem('petPlanetData');
             if (saved) {
@@ -452,6 +452,7 @@
                     gameData.totalHatched = typeof parsed.totalHatched === 'number' ? parsed.totalHatched : 0;
                     gameData.totalLoginDays = typeof parsed.totalLoginDays === 'number' ? parsed.totalLoginDays : 0;
                     gameData.lastLoginDate = parsed.lastLoginDate || '';
+                    gameData.careItems = parsed.careItems || {food:0, clean:0, toy:0};
                 } catch(e) {
                     console.error('存档读取失败，使用默认数据:', e);
                     gameData.pets = [
@@ -1140,8 +1141,8 @@ function showTab(tab, evt) {
 
         // 通过UID显示宠物详情
         function showPetDetailByUid(uid) {
-console.log('[DEBUG] showPetDetailByUid called, uid=' + uid);
-            const idx = gameData.pets.findIndex(p => p.uid === uid);
+
+            const idx = gameData.pets.findIndex(p => p.uid == uid);
             if (idx >= 0) showPetDetail(idx);
         }
 
@@ -1422,7 +1423,7 @@ console.log('[DEBUG] showPetDetailByUid called, uid=' + uid);
         // 显示宠物详情弹窗
         let detailPetIdx = null;
         function showPetDetail(idx) {
-console.log('[DEBUG] showPetDetail called, idx=' + idx + ', modal=' + (modal?'found':'NULL'));
+
             detailPetIdx = idx;
             const pet = gameData.pets[idx];
             const modal = document.getElementById('petDetailModal');
@@ -1527,7 +1528,7 @@ console.log('[DEBUG] showPetDetail called, idx=' + idx + ', modal=' + (modal?'fo
         }
 
         // 显示登录UI
-        function showLoginUI() { console.log("showLoginUI called");
+        function showLoginUI() { 
             const modal = document.getElementById('loginModal');
             const loginForm = document.getElementById('loginForm');
             const loggedInInfo = document.getElementById('loggedInInfo');
@@ -2344,7 +2345,7 @@ console.log('[DEBUG] showPetDetail called, idx=' + idx + ', modal=' + (modal?'fo
     }
 
     function showToast(msg) {
-console.log('[DEBUG] showToast: ' + msg);
+
         let t = document.getElementById('toastNotify');
         if (!t) {
             t = document.createElement('div');
@@ -2685,7 +2686,7 @@ console.log('[DEBUG] showToast: ' + msg);
     function showPetStatusModal(uid) {
         var pet = null;
         for (var i = 0; i < gameData.pets.length; i++) {
-            if (gameData.pets[i].uid === uid) { pet = gameData.pets[i]; break; }
+            if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; }
         }
         if (!pet) return;
         var s = pet.status || {hunger:80, health:80, happiness:80};
@@ -2725,7 +2726,7 @@ console.log('[DEBUG] showToast: ' + msg);
         if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
         var pet = null;
         for (var i = 0; i < gameData.pets.length; i++) {
-            if (gameData.pets[i].uid === uid) { pet = gameData.pets[i]; break; }
+            if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; }
         }
         if (!pet) return;
         if (!pet.status) pet.status = {hunger:80, health:80, happiness:80};
@@ -2746,7 +2747,7 @@ console.log('[DEBUG] showToast: ' + msg);
         showToast('\u4F7F\u7528\u6210\u529F\uFF01');
         showPetStatusModal(uid);
     }
-window.addEventListener('DOMContentLoaded', function() { console.log('DOM loaded, calling init...'); init(); });
+window.addEventListener('DOMContentLoaded', function() {  init(); });
 
         // Auto-init
         window.onload = function() { init(); };
