@@ -2424,9 +2424,9 @@ function showTab(tab, evt) {
                 <div class="progress-bar"><div class="progress-fill" style="width:${s.happiness}%;background:${happyColor};"></div></div>
                 <div style="font-size:11px;color:#666;">😊 快乐: ${Math.round(s.happiness)}%</div>
                 <div style="margin-top:8px; display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="showCareItemModal('food', ${pet.uid})">🍗 喂</button>
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="showCareItemModal('clean', ${pet.uid})">🧹 清洁</button>
-                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="showCareItemModal('toy', ${pet.uid})">🎾 玩</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;" onclick="event.stopPropagation();showCareItemModal('food', ${pet.uid})">🍗 喂</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#3498DB;" onclick="event.stopPropagation();showCareItemModal('clean', ${pet.uid})">🧹 清洁</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#E74C3C;" onclick="event.stopPropagation();showCareItemModal('toy', ${pet.uid})">🎾 玩</button>
                 </div>
             </div>`;
         });
