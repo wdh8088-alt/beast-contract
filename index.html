@@ -236,6 +236,16 @@
     </div>
 
     <script>
+        // 全局错误捕获
+        window.onerror = function(msg, url, line, col, error) {
+            var errMsg = 'JS错误: ' + msg + ' (行:' + line + ')';
+            console.error(errMsg);
+            if (document.getElementById('content')) {
+                document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ 页面出错</h3><p>' + errMsg + '</p><button onclick="location.reload()" style="padding:10px 20px;">刷新页面</button></div>';
+            }
+            return true;
+        };
+    
         // 宠物数据库（36只 + 创世6只）
         const petDatabase = [
             { id: 'kungfu_fox', name: '功夫狐', profession: '功夫', rarity: 'G2', power: 1200, img: 'kungfu_fox.png' },
@@ -1070,17 +1080,17 @@ function showTab(tab, evt) {
             selectedPet = null;
             const content = document.getElementById('content');
             switch(tab) {
-                case 'collection': showCollection(content); break;
-                case 'hatch': showHatch(content); break;
-                case 'dungeon': showDungeon(content); break;
-                case 'equip': showEquip(content); break;
-                case 'fashion': showFashion(content); break;
-                case 'tasks': showTasks(content); break;
-                case 'battle': showBattle(content); break;
-                case 'shop': showShop(content); break;
-                case 'care': showCareTab(); break;
-                case 'synth': showTabSynth(); break;
-                case 'chat': showChat(content); break;
+                case 'collection': try { showCollection(content); } catch(e) { console.error('[ERROR] showCollection:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showCollection 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'hatch': try { showHatch(content); } catch(e) { console.error('[ERROR] showHatch:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showHatch 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'dungeon': try { showDungeon(content); } catch(e) { console.error('[ERROR] showDungeon:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showDungeon 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'equip': try { showEquip(content); } catch(e) { console.error('[ERROR] showEquip:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showEquip 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'fashion': try { showFashion(content); } catch(e) { console.error('[ERROR] showFashion:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showFashion 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'tasks': try { showTasks(content); } catch(e) { console.error('[ERROR] showTasks:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showTasks 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'battle': try { showBattle(content); } catch(e) { console.error('[ERROR] showBattle:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showBattle 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'shop': try { showShop(content); } catch(e) { console.error('[ERROR] showShop:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showShop 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'care': try { showCareTab(); } catch(e) { console.error('[ERROR] showCareTab:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showCareTab 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'synth': try { showTabSynth(); } catch(e) { console.error('[ERROR] showTabSynth:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showTabSynth 出错</h3><p>'+e.message+'</p></div>'; } break; break;
+                case 'chat': try { showChat(content); } catch(e) { console.error('[ERROR] showChat:', e); if(document.getElementById('content')) document.getElementById('content').innerHTML = '<div style="color:red;padding:20px;"><h3>⚠️ showChat 出错</h3><p>'+e.message+'</p></div>'; } break; break;
             }
         }
 
