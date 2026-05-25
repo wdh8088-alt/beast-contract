@@ -2673,17 +2673,45 @@ function showTab(tab, evt) {
 
 // Auto-init
     function buyCareItem(type) {
-        if (gameData.pg < 20) return showToast('PG\u4E0D\u8DB3\uFF01');
-        if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
-        gameData.pg -= 20;
-        gameData.careItems[type] = (gameData.careItems[type] || 0) + 1;
-        saveGame(); updateUI();
-        var names = {food:'\u7CAE\u98DF', clean:'\u6E05\u6D01\u7528\u54C1', toy:'\u73A9\u5177'};
-        showToast('\u8D2D\u4E70' + names[type] + '\u6210\u529F\uFF01');
-        showShop(document.getElementById('content'));
-    }
+    if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
+    var names = {food:'粮食', clean:'清洁用品', toy:'玩具'};
+    var icons = {food:'🍗', clean:'🧹', toy:'🎾'};
+    var maxAfford = Math.floor(gameData.pg / 20);
+    if (maxAfford < 1) { showToast('PG不足！需要20 PG'); return; }
+    var h = '<h3>' + icons[type] + ' 购买' + names[type] + '</h3>';
+    h += '<p style="color:#666;font-size:13px;margin:10px 0;">单价：20 PG | 拥有：' + (gameData.careItems[type]||0) + ' 个 | 余额：' + gameData.pg + ' PG</p>';
+    h += '<div style="margin:15px 0;"><label style="font-weight:bold;">购买数量：</label>';
+    h += '<select id="buyQty" style="padding:8px 12px;border-radius:8px;border:2px solid #ddd;font-size:16px;margin-left:10px;">';
+    for (var i = 1; i <= Math.min(maxAfford, 50); i++) h += '<option value="' + i + '">' + i + ' 个</option>';
+    h += '</select></div>';
+    h += '<p id="buyTotal" style="font-size:18px;font-weight:bold;color:#E74C3C;margin:10px 0;">总计：20 PG</p>';
+    h += '<div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">';
+    h += '<button class="btn btn-primary" style="padding:10px 30px;" onclick="confirmBuyCareItem(\'' + type + '\')">确认购买</button>';
+    h += '<button class="btn" style="padding:10px 30px;background:#95a5a6;color:white;" onclick="closeGameDialog();showShop(document.getElementById(\'content\'))">取消</button></div>';
+    showGameDialog(h);
+    setTimeout(function(){
+        var sel = document.getElementById('buyQty');
+        if (sel) sel.onchange = function(){ document.getElementById('buyTotal').textContent = '总计：' + (sel.value * 20) + ' PG'; };
+    }, 100);
+}
 
-    function showPetStatusModal(uid) {
+    
+function confirmBuyCareItem(type) {
+    var sel = document.getElementById('buyQty');
+    if (!sel) return;
+    var qty = parseInt(sel.value);
+    var cost = qty * 20;
+    if (gameData.pg < cost) { showToast('PG不足！'); return; }
+    if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
+    gameData.pg -= cost;
+    gameData.careItems[type] = (gameData.careItems[type] || 0) + qty;
+    saveGame(); updateBalances();
+    var names = {food:'粮食', clean:'清洁用品', toy:'玩具'};
+    closeGameDialog();
+    showShop(document.getElementById('content'));
+    showSuccessDialog('购买成功！', names[type] + ' x' + qty + '，已添加到库存');
+}
+function showPetStatusModal(uid) {
         var pet = null;
         for (var i = 0; i < gameData.pets.length; i++) {
             if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; }
@@ -2723,30 +2751,29 @@ function showTab(tab, evt) {
     }
 
     function useCareItem(type, uid) {
-        if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
-        var pet = null;
-        for (var i = 0; i < gameData.pets.length; i++) {
-            if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; }
-        }
-        if (!pet) return;
-        if (!pet.status) pet.status = {hunger:80, health:80, happiness:80};
-        if (gameData.careItems[type] > 0) {
-            gameData.careItems[type]--;
-        } else if (gameData.pg >= 20) {
-            gameData.pg -= 20;
-        } else {
-            showToast('PG\u4E0D\u8DB3\u4E14\u6CA1\u6709\u5E93\u5B58\uFF0C\u8BF7\u5148\u53BB\u5546\u5E97\u8D2D\u4E70\uFF01');
-            return;
-        }
-        if (type === 'food') pet.status.hunger = Math.min(100, pet.status.hunger + 30);
-        if (type === 'clean') pet.status.health = Math.min(100, pet.status.health + 30);
-        if (type === 'toy') pet.status.happiness = Math.min(100, pet.status.happiness + 30);
-        pet.exp = (pet.exp || 0) + 5;
-        checkLevelUp(pet);
-        saveGame(); updateUI();
-        showToast('\u4F7F\u7528\u6210\u529F\uFF01');
-        showPetStatusModal(uid);
+    if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
+    var pet = null;
+    for (var i = 0; i < gameData.pets.length; i++) { if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; } }
+    if (!pet) return;
+    if (!pet.status) pet.status = {hunger:80, health:80, happiness:80};
+    if (gameData.careItems[type] > 0) {
+        gameData.careItems[type]--;
+    } else if (gameData.pg >= 20) {
+        gameData.pg -= 20;
+    } else {
+        showToast('PG不足且没有库存，请先去商店购买！'); return;
     }
+    var tn = {food:'喂养', clean:'清洁', toy:'玩耍'};
+    var sn = {food:'饱食度', clean:'健康', toy:'快乐'};
+    if (type === 'food') pet.status.hunger = Math.min(100, (pet.status.hunger||0) + 30);
+    if (type === 'clean') pet.status.health = Math.min(100, (pet.status.health||0) + 30);
+    if (type === 'toy') pet.status.happiness = Math.min(100, (pet.status.happiness||0) + 30);
+    pet.exp = (pet.exp || 0) + 5;
+    checkLevelUp(pet);
+    saveGame(); updateBalances();
+    showSuccessDialog(tn[type] + '成功！', sn[type] + '+30，经验+5');
+    setTimeout(function(){ closePetStatusModal(); showPetStatusModal(uid); }, 1500);
+}
 window.addEventListener('DOMContentLoaded', function() {  init(); });
 
         // Auto-init
@@ -2757,7 +2784,20 @@ window.addEventListener('DOMContentLoaded', function() {  init(); });
         }
         // Direct call at end of script as final fallback
         try { init(); } catch(e) { console.error('init() error:', e); }
+
+function showGameDialog(c) { document.getElementById('gameDialogContent').innerHTML = c; document.getElementById('gameDialog').style.display = 'flex'; }
+function closeGameDialog() { document.getElementById('gameDialog').style.display = 'none'; }
+function showSuccessDialog(title, detail) {
+    var h = '<div style="padding:20px;"><div style="font-size:48px;margin-bottom:15px;">✅</div>';
+    h += '<h3 style="color:#27AE60;margin-bottom:10px;">' + title + '</h3>';
+    if (detail) h += '<p style="color:#333;font-size:16px;">' + detail + '</p>';
+    h += '<button class="btn btn-primary" style="margin-top:20px;padding:10px 40px;" onclick="closeGameDialog()">确定</button></div>';
+    showGameDialog(h);
+}
+
 </script>
 <div id="petStatusModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;"><div id="petStatusContent" style="background:white;border-radius:20px;padding:30px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;position:relative;"></div></div>
+
+<div id="gameDialog" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:20000;align-items:center;justify-content:center;"><div id="gameDialogContent" style="background:white;border-radius:20px;padding:30px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;position:relative;text-align:center;"></div></div>
 </body>
 </html>
