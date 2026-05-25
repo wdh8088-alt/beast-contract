@@ -1118,7 +1118,7 @@ function showTab(tab, evt) {
                 filteredPets.forEach((pet, idx) => {
                     const rarityClass = 'rarity-' + pet.rarity;
                     html += `
-                        <div class="pet-card ${rarityClass}" onclick="showPetStatusModal('${pet.uid}')">
+                        <div class="pet-card ${rarityClass}" onclick="showPetDetailByUid(${pet.uid})">
                             <img src="${'images/'+pet.img}" alt="${pet.name}" onerror="this.style.display='none'">
                             <div class="pet-name">${pet.name}</div>
                             <div class="pet-type">${pet.profession} | ${pet.rarity}</div>
