@@ -455,7 +455,7 @@
                 try {
                     const parsed = JSON.parse(saved);
                     gameData.pg = typeof parsed.pg === 'number' ? parsed.pg : 10000;
-                    gameData.pets = Array.isArray(parsed.pets) ? parsed.pets : [];
+                    gameData.pets = (Array.isArray(parsed.pets) ? parsed.pets : []).filter(p => p != null);
                     gameData.username = parsed.username || '';
                     gameData.isLoggedIn = parsed.isLoggedIn === true;
                     gameData.registeredAt = parsed.registeredAt || 0;
@@ -667,6 +667,7 @@
             html += '<p style="color:#666;margin:8px 0;font-size:13px;">\u9009\u62E9\u51FA\u6218\u5BA0\u7269\uFF08\u9965\u997F\u5EA6<20%\u4E0D\u80FD\u51FA\u6218\uFF09</p>';
             html += '<div class="pet-grid">';
             for (var i = 0; i < ps.length; i++) {
+                if (!ps[i]) continue;
                 var p = ps[i];
                 var pwr = calcPower(p);
                 html += '<div class="pet-card rarity-' + p.rarity + (dungeonState.dungeonPet === p.uid ? ' selected' : '') + '" onclick="selDungeonPet(' + p.uid + ')">';
@@ -1210,6 +1211,7 @@ function showTab(tab, evt) {
             html += '<div class="pet-grid" id="hatchPetGrid">';
             
             gameData.pets.forEach((pet, idx) => {
+                if (!pet) return;
                 const config = hatchConfig[pet.rarity] || {};
                 const canHatch = config.costPG > 0;
                 const hatchCount = pet.hatchCount || 0;
@@ -2653,6 +2655,7 @@ function showCareTab() {
     let html = '<div style="text-align:center; margin-bottom:20px;"><h2>❤️ 宠物养成</h2><p style="color:#666;">照顾你的宠物，保持它们健康快乐！</p></div>';
     html += '<div class="pet-grid">';
     gameData.pets.forEach(pet => {
+        if (!pet) return;
         const s = pet.status || { hunger: 80, health: 80, happiness: 80 };
         const hungerColor = s.hunger > 60 ? '#2ECC71' : (s.hunger > 30 ? '#F39C12' : '#E74C3C');
         const healthColor = s.health > 60 ? '#2ECC71' : (s.health > 30 ? '#F39C12' : '#E74C3C');
@@ -2789,6 +2792,7 @@ function showTabSynth() {
         } else {
             html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">';
             filteredPets.forEach(pet => {
+                if (!pet) return;
                 const isS1 = pet.uid === synthPet1;
                 const isS2 = pet.uid === synthPet2;
                 html += '<div class="pet-card rarity-'+pet.rarity+(isS1||isS2?' selected':'')+'" onclick="selectSynthPet(' + pet.uid + ')" style="cursor:pointer;">';
