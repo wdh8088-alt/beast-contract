@@ -553,7 +553,7 @@
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;">
                             <span style="font-size:11px;background:#dfe6e9;color:#636e72;padding:2px 8px;border-radius:5px;">成就</span>
-                            <button onclick="claimTask(${task.id},${task.reward},${completed})" style="border:none;border-radius:5px;padding:8px 15px;font-size:13px;${btnStyle}" ${canClaim?'':'disabled'}>
+                            <button onclick="claimTask('${task.id}',${task.reward},${completed})" style="border:none;border-radius:5px;padding:8px 15px;font-size:13px;${btnStyle}" ${canClaim?'':'disabled'}>
                                 ${alreadyClaimed ? '🔔 已领取' : completed ? '🎁 领取' : '🔒 未完成'}
                             </button>
                         </div>
@@ -2337,10 +2337,11 @@ function showTab(tab, evt) {
             clean:[{health:30,exp:5,price:20},{health:60,exp:15,price:50},{health:100,exp:30,price:100}],
             toy:[{happy:30,exp:5,price:20},{happy:60,exp:15,price:50},{happy:100,exp:30,price:100}]
         };
-        var it=items[type][tier];
+        var it=items[type]&&items[type][tier];
+        if(!it){showToast("道具配置错误！");return;}
         if(gameData.pg<it.price){showToast("PG不足！需要"+it.price+" PG");return;}
         gameData.pg-=it.price;
-        var pet=gameData.pets.find(function(p){return p.uid===uid;});
+        var pet=gameData.pets.find(function(p){return p&&p.uid===uid;});
         if(!pet){showToast("宠物不存在！");return;}
         if(!pet.status) pet.status={hunger:80,health:80,happiness:80};
         var tn={food:"喂养",clean:"清洁",toy:"玩耍"};
@@ -2604,7 +2605,7 @@ function showPetStatusModal(uid) {
     function useCareItem(type, uid) {
     if (!gameData.careItems) gameData.careItems = {food:0, clean:0, toy:0};
     var pet = null;
-    for (var i = 0; i < gameData.pets.length; i++) { if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; } }
+    for (var i = 0; i < gameData.pets.length; i++) { if (!gameData.pets[i]) continue; if (gameData.pets[i].uid == uid) { pet = gameData.pets[i]; break; } }
     if (!pet) return;
     if (!pet.status) pet.status = {hunger:80, health:80, happiness:80};
     if (gameData.careItems[type] > 0) {
