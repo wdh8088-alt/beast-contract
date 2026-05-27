@@ -2307,7 +2307,7 @@ function showTab(tab, evt) {
         };
         var typeNames={food:"喂养",clean:"清洁",toy:"玩耍"};
         var typeIcons={food:"🍗",clean:"🧹",toy:"🎾"};
-        var statNames={food:"饥饿",clean:"健康",toy:"快乐"};
+        var statNames={food:"健康",clean:"饥饿",toy:"快乐"};
         var list=items[type];
         var owned=gameData.careItems[type]||0;
         var h="<div style=\"padding:20px;\">";
@@ -2349,8 +2349,8 @@ function showTab(tab, evt) {
 
     function useCareItemDirect(type, uid, tier) {
         var items={
-            food:[{hunger:30,exp:5,price:20},{hunger:60,exp:15,price:50},{hunger:100,exp:30,price:100}],
-            clean:[{health:30,exp:5,price:20},{health:60,exp:15,price:50},{health:100,exp:30,price:100}],
+            food:[{health:30,exp:5,price:20},{health:60,exp:15,price:50},{health:100,exp:30,price:100}],
+            clean:[{hunger:30,exp:5,price:20},{hunger:60,exp:15,price:50},{hunger:100,exp:30,price:100}],
             toy:[{happy:30,exp:5,price:20},{happy:60,exp:15,price:50},{happy:100,exp:30,price:100}]
         };
         var it=items[type]&&items[type][tier];
@@ -2361,10 +2361,10 @@ function showTab(tab, evt) {
         if(!pet){showToast("宠物不存在！");return;}
         if(!pet.status) pet.status={hunger:80,health:80,happiness:80};
         var tn={food:"喂养",clean:"清洁",toy:"玩耍"};
-        var sn={food:"饥饿",clean:"健康",toy:"快乐"};
+        var sn={food:"健康",clean:"饥饿",toy:"快乐"};
         var sv=type==="food"?it.hunger:type==="clean"?it.health:it.happy;
-        if(type==="food") pet.status.hunger=Math.min(100,pet.status.hunger+it.hunger);
-        else if(type==="clean") pet.status.health=Math.min(100,pet.status.health+it.health);
+        if(type==="food") pet.status.health=Math.min(100,pet.status.health+it.health);
+        else if(type==="clean") pet.status.hunger=Math.min(100,pet.status.hunger+it.hunger);
         else pet.status.happiness=Math.min(100,pet.status.happiness+it.happy);
         pet.exp=(pet.exp||0)+it.exp;
         checkLevelUp(pet);
@@ -2632,9 +2632,9 @@ function showPetStatusModal(uid) {
         showToast('PG不足且没有库存，请先去商店购买！'); return;
     }
     var tn = {food:'喂养', clean:'清洁', toy:'玩耍'};
-    var sn = {food:'饱食度', clean:'健康', toy:'快乐'};
-    if (type === 'food') pet.status.hunger = Math.min(100, (pet.status.hunger||0) + 30);
-    if (type === 'clean') pet.status.health = Math.min(100, (pet.status.health||0) + 30);
+    var sn = {food:'健康', clean:'饱食度', toy:'快乐'};
+    if (type === 'food') pet.status.health = Math.min(100, (pet.status.health||0) + 30);
+    if (type === 'clean') pet.status.hunger = Math.min(100, (pet.status.hunger||0) + 30);
     if (type === 'toy') pet.status.happiness = Math.min(100, (pet.status.happiness||0) + 30);
     pet.exp = (pet.exp || 0) + 5;
     checkLevelUp(pet);
