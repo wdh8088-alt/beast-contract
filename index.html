@@ -2331,6 +2331,22 @@ function showTab(tab, evt) {
         document.getElementById("petStatusModal").style.display="block";
     }
 
+    // 宠物升级系统：经验值达到阈值自动升级
+    function checkLevelUp(pet) {
+        if (!pet) return;
+        pet.level = pet.level || 1;
+        pet.exp = pet.exp || 0;
+        // 每级所需经验 = 等级 * 50（线性增长）
+        var needExp = pet.level * 50;
+        while (pet.exp >= needExp && pet.level < 100) {
+            pet.exp -= needExp;
+            pet.level += 1;
+            needExp = pet.level * 50;
+            pet.power = (pet.power || 100) + 20; // 每级+20战力
+            showToast('🎉 ' + (pet.name || '宠物') + ' 升级到 Lv.' + pet.level + '！');
+        }
+    }
+
     function useCareItemDirect(type, uid, tier) {
         var items={
             food:[{hunger:30,exp:5,price:20},{hunger:60,exp:15,price:50},{hunger:100,exp:30,price:100}],
